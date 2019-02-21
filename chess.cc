@@ -23,7 +23,7 @@ typedef vector<Row> Board;
 
 bool wqCastling = true, wkCastling = true, bqCastling = true, bkCastling = true;
 bool whiteCheck = false, blackCheck = false;
-vector<Piece> whitePieces, blackPieces;
+vector<Piece*> whitePieces, blackPieces;
 
 int abs (int n) {
     if (n < 0) return -n;
@@ -35,6 +35,34 @@ void insert(vector<Move>& v1, const vector<Move>& v2) {
     for (int i = 0; i < size; i++) v1.push_back(v2[i]);
 }
 
+void updatePieceArray(string team, int oldI, int oldJ, int newI, int newJ) {
+    int x = 0, size = 0;
+    bool found = false;
+
+    if (team == "white") {
+        size = whitePieces.size();
+        while (x < size and !(whitePieces[x].i == oldI and whitePieces[x].j == oldJ)) ++x;
+        if (x < size) {
+            whitePieces[x].i = newI;
+            whitePieces[x].j = newJ;
+        }
+    } else {
+        size = blackPieces.size();
+        while (x < size and !(blackPieces[x].i == oldI and blackPieces[x].j == oldJ)) ++x;
+        if (x < size) {
+            blackPieces[x].i = newI;
+            blackPieces[x].j = newJ;
+        }
+    }
+}
+
+Piece getKing(vector<Piece> pieces) {
+    int size = pieces.size();
+    for (int i = 0; i < size; i++) if (pieces[i].type == "king") return pieces[i];
+    
+    return pieces[0];
+}
+
 Move setMove(Piece piece, Piece pieceCaptured, string type) {
     Move move;
     move.piece = piece;
@@ -43,9 +71,6 @@ Move setMove(Piece piece, Piece pieceCaptured, string type) {
     move.j = pieceCaptured.j;
     move.type = type;
     
-    if (pieceCaptured.type == "king") 
-        pieceCaptured.team == "white" ? whiteCheck = true : blackCheck = true;
-
     if (move.type == "castling") pieceCaptured.j == 7 ? move.idn = "O-O" : move.idn = "O-O-O";
     else {
         move.idn.push_back(piece.idn);
@@ -54,6 +79,43 @@ Move setMove(Piece piece, Piece pieceCaptured, string type) {
         move.idn.push_back((8 - move.i) + '0');
     }
     return move;
+}
+
+void setPiece(Square& square, string type, string team, char idn, int i, int j) {
+    square.piece.type = type;
+    square.piece.team = team;
+    square.piece.idn = idn;
+    square.piece.i = i;
+    square.piece.j = j;
+
+} 
+
+void move(Board& board, Move m, int &turn) {
+    if (m.type == "castling") {
+        if (m.j == 7) {
+            setPiece(board[m.piece.i][6], m.piece.type, m.piece.team, m.piece.idn, m.piece.i, 6);
+            setPiece(board[m.piece.i][5], m.pieceCaptured.type, m.pieceCaptured.team, m.pieceCaptured.idn, m.piece.i, 5);
+            setPiece(board[m.piece.i][7], "empty", " ", 'o', m.piece.i, 7);
+
+            updatePieceArray(m.piece.team, m.piece.i, m.piece.j, m.piece.i, 6);
+            updatePieceArray(m.piece.team, m.piece.i, m.pieceCaptured.j, m.piece.i, 5);
+        } else {
+            setPiece(board[m.piece.i][2], m.piece.type, m.piece.team, m.piece.idn, m.piece.i, 2);
+            setPiece(board[m.piece.i][3], m.pieceCaptured.type, m.pieceCaptured.team, m.pieceCaptured.idn, m.piece.i, 3);
+            setPiece(board[m.piece.i][0], "empty", " ", 'o', m.piece.i, 0);
+
+            updatePieceArray(m.piece.team, m.piece.i, m.piece.j, m.piece.i, 2);
+            updatePieceArray(m.piece.team, m.piece.i, m.pieceCaptured.j, m.piece.i, 3);
+        }
+        setPiece(board[m.piece.i][m.piece.j], "empty", " ", 'o', m.piece.i, m.piece.j);
+    } else {
+        int i = m.i, j = m.j;
+        updatePieceArray(m.piece.team, m.piece.i, m.piece.j, i, j);
+        setPiece(board[m.piece.i][m.piece.j], "empty", " ", 'o', m.piece.i, m.piece.j); 
+        setPiece(board[i][j], m.piece.type, m.piece.team, m.piece.idn, i, j);
+    }
+
+    turn++;
 }
 
 bool isSquareAttacked(Board board, const Square &square, string team) {
@@ -163,8 +225,10 @@ vector<Move> calculateLegalMoves(const Board& board, Piece piece, Move previousM
         while ((!endU or !endD or !endL or !endR) and inc < 8) {
 
             if (!endU)
-                if (i - inc >= 0 and board[i - inc][j].piece.type == "empty")
-                    legalMoves.push_back(setMove(piece, board[i - inc][j].piece, "normal"));
+                if (i - inc >= 0 and board[i - inc][j].piece.type == "empty") {
+                    if (piece.team == "white" and whiteCheck) 
+                        legalMoves.push_back(setMove(piece, board[i - inc][j].piece, "normal"));
+                }
                 else {
                     if (i - inc >= 0 and board[i - inc][j].piece.team != piece.team)
                         legalMoves.push_back(setMove(piece, board[i - inc][j].piece, "capture"));
@@ -336,13 +400,19 @@ vector<Move> calculateLegalMoves(const Board& board, Piece piece, Move previousM
 vector<Move> calculateLegalMoves(const Board& board, Move previousMove, int turn) {
     vector<Move> legalMoves;
     if (turn % 2 != 0) {
+        Piece king = getKing(whitePieces);
+        whiteCheck = isSquareAttacked(board, board[king.i][king.j], king.team);
+        if (whiteCheck) cout << "check boi !!!" << endl;
 	    for (int i = 0; i < 8; i++)
 	        for (int j = 0; j < 8; j++) {
 	            Piece piece = board[i][j].piece;
 	            if (piece.team == "white") insert(legalMoves, calculateLegalMoves(board, piece, previousMove));
 	        }
 	} else {
-		for (int i = 0; i < 8; i++)
+        Piece king = getKing(blackPieces);
+        blackCheck = isSquareAttacked(board, board[king.i][king.j], king.team);
+		if (blackCheck) cout << "check boi !!!" << endl;
+        for (int i = 0; i < 8; i++)
 	        for (int j = 0; j < 8; j++) {
 	        	Piece piece = board[i][j].piece;
 	            if (piece.team == "black") insert(legalMoves, calculateLegalMoves(board, piece, previousMove));
@@ -350,14 +420,6 @@ vector<Move> calculateLegalMoves(const Board& board, Move previousMove, int turn
 	}
 	return legalMoves;
 }
-
-void setPiece(Square& square, string type, string team, char idn, int i, int j) {
-    square.piece.type = type;
-    square.piece.team = team;
-    square.piece.idn = idn;
-    square.piece.i = i;
-    square.piece.j = j;
-} 
 
 Board setBoard() {
     Board board(8, Row(8));
@@ -428,27 +490,6 @@ void printVector(const vector<Move>& v) {
     cout << endl;
 }
 
-void move(Board& board, Move m, int &turn) {
-    if (m.type == "castling") {
-        if (m.j == 7) {
-            setPiece(board[m.piece.i][6], m.piece.type, m.piece.team, m.piece.idn, m.piece.i, 6);
-            setPiece(board[m.piece.i][5], m.pieceCaptured.type, m.pieceCaptured.team, m.pieceCaptured.idn, m.piece.i, 5);
-            setPiece(board[m.piece.i][7], "empty", " ", 'o', m.piece.i, 7);
-        } else {
-            setPiece(board[m.piece.i][2], m.piece.type, m.piece.team, m.piece.idn, m.piece.i, 2);
-            setPiece(board[m.piece.i][3], m.pieceCaptured.type, m.pieceCaptured.team, m.pieceCaptured.idn, m.piece.i, 3);
-            setPiece(board[m.piece.i][0], "empty", " ", 'o', m.piece.i, 0);
-        }
-        setPiece(board[m.piece.i][m.piece.j], "empty", " ", 'o', m.piece.i, m.piece.j);
-    } else {
-        int i = m.i, j = m.j;
-        setPiece(board[i][j], m.piece.type, m.piece.team, m.piece.idn, i, j);
-        setPiece(board[m.piece.i][m.piece.j], "empty", " ", 'o', m.piece.i, m.piece.j); 
-    }
-
-    turn++;
-}
-
 Move search(const vector<Move>& moves, string move) {
     int size = moves.size(), i = 0;
     while (moves[i].idn != move and i < size) 
@@ -482,11 +523,6 @@ int main () {
     Board board = setBoard();
     printBoard(board);
 
-    /* for (int i = 0; i < whitePieces.size(); i++) {
-        Piece piece = whitePieces[i];
-        cout << piece.type << ": " << piece.i << ',' << piece.j << " " << piece.team << endl;
-    }*/
-
     Move previousMove;
     previousMove.piece.type = "empty";
 
@@ -504,6 +540,12 @@ int main () {
             //cout << (isSquareAttacked(board, board[7][4], board[7][4].piece.team) ? "white king is in shambles" : "nope") << endl;
             //cout << (isSquareAttacked(board, board[0][4], board[0][4].piece.team) ? "black king is in shambles" : "nope") << endl;
             legalMoves = calculateLegalMoves(board, previousMove, turn);
+            /*for (int i = 0; i < whitePieces.size(); i++) {
+                Piece piece = whitePieces[i];
+                cout << piece.type << ": " << piece.i << ',' << piece.j << " " << piece.team << "             ";
+                piece = blackPieces[i];
+                cout << piece.type << ": " << piece.i << ',' << piece.j << " " << piece.team << endl;
+            }*/
             printBoard(board);
             printVector(legalMoves);
         } else cout << "esto es embarazoso" << endl;
