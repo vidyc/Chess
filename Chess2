@@ -1,0 +1,46 @@
+#include "Estudiant.hh"
+#include <vector>
+#include <iostream>
+
+int main()
+{
+    int n;
+    cin >> n;    
+
+    vector<Estudiant> all(n);
+    for(Estudiant &est: all)
+    {
+        est.llegir(); 
+    }
+    all.push_back(Estudiant());
+
+    auto currentMax = all.begin();
+    vector<Estudiant> max;
+    for(auto it = currentMax+1; it != all.end(); it++)
+    {
+        if(it->consultar_DNI() != currentMax->consultar_DNI())
+        {
+            max.push_back(*currentMax);
+            currentMax = it;
+        }
+        else if(it->te_nota())
+        {
+            if(currentMax->te_nota())
+            {
+                if(it->consultar_nota() > currentMax->consultar_nota())
+                {
+                    currentMax = it;
+                }
+            }
+            else
+            {
+                currentMax = it;
+            }
+        }
+    }
+
+    for(Estudiant &est: max)
+    {
+        est.escriure(); 
+    }
+}
