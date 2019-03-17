@@ -23,7 +23,6 @@ typedef vector<Row> Board;
 
 bool wqCastling = true, wkCastling = true, bqCastling = true, bkCastling = true;
 bool whiteCheck = false, blackCheck = false;
-vector<Piece*> whitePieces, blackPieces;
 
 int abs (int n) {
     if (n < 0) return -n;
@@ -35,25 +34,14 @@ void insert(vector<Move>& v1, const vector<Move>& v2) {
     for (int i = 0; i < size; i++) v1.push_back(v2[i]);
 }
 
-void updatePieceArray(string team, int oldI, int oldJ, int newI, int newJ) {
-    int x = 0, size = 0;
-    bool found = false;
+void updatePieceArray(vector<Piece> &pieces, int oldI, int oldJ, int newI, int newJ) {
+    int x = 0, size = pieces.size();
 
-    if (team == "white") {
-        size = whitePieces.size();
-        while (x < size and !(whitePieces[x].i == oldI and whitePieces[x].j == oldJ)) ++x;
-        if (x < size) {
-            whitePieces[x].i = newI;
-            whitePieces[x].j = newJ;
-        }
-    } else {
-        size = blackPieces.size();
-        while (x < size and !(blackPieces[x].i == oldI and blackPieces[x].j == oldJ)) ++x;
-        if (x < size) {
-            blackPieces[x].i = newI;
-            blackPieces[x].j = newJ;
-        }
-    }
+    while (x < size and !(pieces[x].i == oldI and pieces[x].j == oldJ)) ++x;
+    if (x < size) {
+        pieces[x].i = newI;
+        pieces[x].j = newJ;
+    } 
 }
 
 Piece getKing(vector<Piece> pieces) {
@@ -90,34 +78,49 @@ void setPiece(Square& square, string type, string team, char idn, int i, int j) 
 
 } 
 
-void move(Board& board, Move m, int &turn) {
+void move(Board& board, Move m, int &turn, vector<Piece> &pieces) {
     if (m.type == "castling") {
         if (m.j == 7) {
             setPiece(board[m.piece.i][6], m.piece.type, m.piece.team, m.piece.idn, m.piece.i, 6);
             setPiece(board[m.piece.i][5], m.pieceCaptured.type, m.pieceCaptured.team, m.pieceCaptured.idn, m.piece.i, 5);
             setPiece(board[m.piece.i][7], "empty", " ", 'o', m.piece.i, 7);
 
-            updatePieceArray(m.piece.team, m.piece.i, m.piece.j, m.piece.i, 6);
-            updatePieceArray(m.piece.team, m.piece.i, m.pieceCaptured.j, m.piece.i, 5);
+            updatePieceArray(pieces, m.piece.i, m.piece.j, m.piece.i, 6);
+            updatePieceArray(pieces, m.piece.i, m.pieceCaptured.j, m.piece.i, 5);
         } else {
             setPiece(board[m.piece.i][2], m.piece.type, m.piece.team, m.piece.idn, m.piece.i, 2);
             setPiece(board[m.piece.i][3], m.pieceCaptured.type, m.pieceCaptured.team, m.pieceCaptured.idn, m.piece.i, 3);
             setPiece(board[m.piece.i][0], "empty", " ", 'o', m.piece.i, 0);
 
-            updatePieceArray(m.piece.team, m.piece.i, m.piece.j, m.piece.i, 2);
-            updatePieceArray(m.piece.team, m.piece.i, m.pieceCaptured.j, m.piece.i, 3);
+            updatePieceArray(pieces, m.piece.i, m.piece.j, m.piece.i, 2);
+            updatePieceArray(pieces, m.piece.i, m.pieceCaptured.j, m.piece.i, 3);
         }
         setPiece(board[m.piece.i][m.piece.j], "empty", " ", 'o', m.piece.i, m.piece.j);
     } else {
         int i = m.i, j = m.j;
-        updatePieceArray(m.piece.team, m.piece.i, m.piece.j, i, j);
+        /*if (m.type == "coronacion" and m.piece.type == "pawn" and m.i % 7 == 0) {
+            string type;
+            cout << "Promote to: " << endl;
+            cout << "knight --- bishop --- rook --- queen" << endl;
+            cin >> type;
+            while (type != "knight" and type != "bishop" and type != "rook" and type != "queen") {
+                cout << "no me muevo de aqui hasta que me des un tipo correcto" << endl;
+                cin >> type;
+            }
+            m.piece.type = type;
+            if (type == "knight") m.piece.idn = 'K';
+            else if (type == "bishop") m.piece.idn = 'B';
+            else if (type == "rook") m.piece.idn = 'R';
+            else m.piece.idn = 'Q';
+        } */
+        updatePieceArray(pieces, m.piece.i, m.piece.j, i, j);
         setPiece(board[m.piece.i][m.piece.j], "empty", " ", 'o', m.piece.i, m.piece.j); 
         setPiece(board[i][j], m.piece.type, m.piece.team, m.piece.idn, i, j);
     }
 
     turn++;
 }
-
+    
 bool isSquareAttacked(Board board, const Square &square, string team) {
     int i = square.piece.i, j = square.piece.j, inc = 1;
     bool found = false, endUL = false, endUR = false, endDL = false, endDR = false;
@@ -215,7 +218,16 @@ bool isSquareAttacked(Board board, const Square &square, string team) {
     return found;
 }
 
-vector<Move> calculateLegalMoves(const Board& board, Piece piece, Move previousMove) {
+bool isLegal(const Board &board, Move m, const vector<Piece> pieces) {
+        Board copy = board;
+        int n = 0;
+        vector<Piece> copieces = pieces;
+        move(copy, m, n, copieces);
+        Piece king = getKing(copieces);
+        return !isSquareAttacked(copy, copy[king.i][king.j], king.team);
+}
+
+vector<Move> calculateLegalMoves(const Board& board, Piece piece, Move previousMove, vector<Piece> &pieces) {
     vector<Move> legalMoves;
     int i = piece.i, j = piece.j;
     //cout << piece.type << ' ' << piece.idn << char(j + 'a') << 8 - i << endl;
@@ -226,41 +238,50 @@ vector<Move> calculateLegalMoves(const Board& board, Piece piece, Move previousM
 
             if (!endU)
                 if (i - inc >= 0 and board[i - inc][j].piece.type == "empty") {
-                    if (piece.team == "white" and whiteCheck) 
-                        legalMoves.push_back(setMove(piece, board[i - inc][j].piece, "normal"));
-                }
-                else {
-                    if (i - inc >= 0 and board[i - inc][j].piece.team != piece.team)
-                        legalMoves.push_back(setMove(piece, board[i - inc][j].piece, "capture"));
+                    Move m = setMove(piece, board[i - inc][j].piece, "normal");
+                    if (isLegal(board, m, pieces)) legalMoves.push_back(m);
+                } else {
+                    if (i - inc >= 0 and board[i - inc][j].piece.team != piece.team) {
+                        Move m = setMove(piece, board[i - inc][j].piece, "capture");
+                        if (isLegal(board, m, pieces)) legalMoves.push_back(m);
+                    }
                     endU = true;
                 }
 
             if (!endD)
-                if (i + inc < 8 and board[i + inc][j].piece.type == "empty") 
-                    legalMoves.push_back(setMove(piece, board[i + inc][j].piece, "normal"));
-                else {
+                if (i + inc < 8 and board[i + inc][j].piece.type == "empty") {
+                    Move m = setMove(piece, board[i + inc][j].piece, "normal");
+                    if (isLegal(board, m, pieces)) legalMoves.push_back(m);
+                } else {
                     if (i + inc < 8 and board[i + inc][j].piece.team != piece.team) {
-                        legalMoves.push_back(setMove(piece, board[i + inc][j].piece, "capture"));
+                        Move m = setMove(piece, board[i + inc][j].piece, "capture");
+                        if (isLegal(board, m, pieces)) legalMoves.push_back(m);
                     }
                     endD = true;
                 }
 
             if (!endR)
-                if (j + inc < 8 and board[i][j + inc].piece.type == "empty")
-                    legalMoves.push_back(setMove(piece, board[i][j + inc].piece, "normal"));
+                if (j + inc < 8 and board[i][j + inc].piece.type == "empty") {
+                    Move m = setMove(piece, board[i][j + inc].piece, "normal");
+                    if (isLegal(board, m, pieces)) legalMoves.push_back(m);
+                }
                 else {
                     if (j + inc < 8 and board[i][j + inc].piece.team != piece.team) {
-                        legalMoves.push_back(setMove(piece, board[i][j + inc].piece, "capture"));
+                        Move m = setMove(piece, board[i][j + inc].piece, "capture");
+                        if (isLegal(board, m, pieces)) legalMoves.push_back(m);
                     }
                     endR = true;
                 }
             
             if (!endL)
-                if (j - inc >= 0 and board[i][j - inc].piece.type == "empty")
-                    legalMoves.push_back(setMove(piece, board[i][j - inc].piece, "normal"));
+                if (j - inc >= 0 and board[i][j - inc].piece.type == "empty") {
+                    Move m = setMove(piece, board[i][j - inc].piece, "normal");
+                    if (isLegal(board, m, pieces)) legalMoves.push_back(m);
+                }
                 else {
                     if (j - inc >= 0 and board[i][j - inc].piece.team != piece.team) {
-                        legalMoves.push_back(setMove(piece, board[i][j - inc].piece, "capture"));
+                        Move m = setMove(piece, board[i][j - inc].piece, "capture");
+                        if (isLegal(board, m, pieces)) legalMoves.push_back(m);
                     }
                     endL = true;
                 }
@@ -273,41 +294,53 @@ vector<Move> calculateLegalMoves(const Board& board, Piece piece, Move previousM
         while ((!endUL or !endUR or !endDL or !endDR) and inc < 8) {
             
             if (!endUL)
-                if (i - inc >= 0 and j - inc >= 0 and board[i - inc][j - inc].piece.type == "empty")
-                    legalMoves.push_back(setMove(piece, board[i - inc][j - inc].piece, "normal"));
+                if (i - inc >= 0 and j - inc >= 0 and board[i - inc][j - inc].piece.type == "empty") {
+                    Move m = setMove(piece, board[i - inc][j - inc].piece, "normal");
+                    if (isLegal(board, m, pieces)) legalMoves.push_back(m);
+                }
                 else {
                     if (i - inc >= 0 and j - inc >= 0 and board[i - inc][j - inc].piece.team != piece.team) {
-                        legalMoves.push_back(setMove(piece, board[i - inc][j - inc].piece, "capture"));
+                        Move m = setMove(piece, board[i - inc][j - inc].piece, "capture");
+                        if (isLegal(board, m, pieces)) legalMoves.push_back(m);
                     }
                     endUL = true;
                 }
                 
             if (!endDR)
-                if (i + inc < 8 and j + inc < 8 and board[i + inc][j + inc].piece.type == "empty") 
-                    legalMoves.push_back(setMove(piece, board[i + inc][j + inc].piece, "normal"));
+                if (i + inc < 8 and j + inc < 8 and board[i + inc][j + inc].piece.type == "empty") {
+                    Move m = setMove(piece, board[i + inc][j + inc].piece, "normal");
+                    if (isLegal(board, m, pieces)) legalMoves.push_back(m);
+                }
                 else {
                     if (i + inc < 8 and j + inc < 8 and board[i + inc][j + inc].piece.team != piece.team) {
-                        legalMoves.push_back(setMove(piece, board[i + inc][j + inc].piece, "capture"));
+                        Move m = setMove(piece, board[i + inc][j + inc].piece, "capture");
+                        if (isLegal(board, m, pieces)) legalMoves.push_back(m);
                     }
                     endDR = true;
                 }
 
             if (!endUR)   
-                if (i - inc >= 0 and j + inc < 8 and board[i - inc][j + inc].piece.type == "empty")
-                    legalMoves.push_back(setMove(piece, board[i - inc][j + inc].piece, "normal"));
+                if (i - inc >= 0 and j + inc < 8 and board[i - inc][j + inc].piece.type == "empty") {
+                    Move m = setMove(piece, board[i - inc][j + inc].piece, "normal");
+                    if (isLegal(board, m, pieces)) legalMoves.push_back(m);
+                }
                 else {
                     if (i - inc >= 0 and j + inc < 8 and board[i - inc][j + inc].piece.team != piece.team) {
-                        legalMoves.push_back(setMove(piece, board[i - inc][j + inc].piece, "capture"));
+                        Move m = setMove(piece, board[i - inc][j + inc].piece, "capture");
+                        if (isLegal(board, m, pieces)) legalMoves.push_back(m);
                     }
                     endUR = true;
                 }
             
             if (!endDL)
-                if (i + inc < 8 and j - inc >= 0 and board[i + inc][j - inc].piece.type == "empty")
-                    legalMoves.push_back(setMove(piece, board[i + inc][j - inc].piece, "normal"));
+                if (i + inc < 8 and j - inc >= 0 and board[i + inc][j - inc].piece.type == "empty") {
+                    Move m = setMove(piece, board[i + inc][j - inc].piece, "normal");
+                    if (isLegal(board, m, pieces)) legalMoves.push_back(m);
+                }
                 else {
                     if (i + inc < 8 and j - inc >= 0 and board[i + inc][j - inc].piece.team != piece.team) {
-                        legalMoves.push_back(setMove(piece, board[i + inc][j - inc].piece, "capture"));
+                        Move m = setMove(piece, board[i + inc][j - inc].piece, "capture");
+                        if (isLegal(board, m, pieces)) legalMoves.push_back(m);
                     }
                     endDL = true;
                 }
@@ -320,10 +353,13 @@ vector<Move> calculateLegalMoves(const Board& board, Piece piece, Move previousM
             for (int incJ = -1; incJ < 2; incJ++) {
                 if (i + incI >= 0 and i + incI < 8 and j + incJ >= 0 and j + incJ < 8) {
                     Piece possPiece = board[i + incI][j + incJ].piece;
-                    if (possPiece.type == "empty") 
-                        legalMoves.push_back(setMove(piece, possPiece, "normal"));
-                    else if (possPiece.team != piece.team)
-                        legalMoves.push_back(setMove(piece, possPiece, "capture"));
+                    if (possPiece.type == "empty") {
+                        Move m = setMove(piece, possPiece, "normal");
+                        if (isLegal(board, m, pieces)) legalMoves.push_back(m);
+                    } else if (possPiece.team != piece.team) {
+                        Move m = setMove(piece, possPiece, "capture");
+                        if (isLegal(board, m, pieces)) legalMoves.push_back(m);
+                    }
                 }
             }
         
@@ -351,24 +387,35 @@ vector<Move> calculateLegalMoves(const Board& board, Piece piece, Move previousM
         int inc = -1;
         if (piece.team == "black") inc = 1;
         
-        if (board[i + inc][j].piece.type == "empty") legalMoves.push_back(setMove(piece, board[i + inc][j].piece, "normal"));
-        
+        if (board[i + inc][j].piece.type == "empty") {
+            Move m = setMove(piece, board[i + inc][j].piece, "normal");
+            if ((i + inc) % 7 == 0) m = setMove(piece, board[i + inc][j].piece, "coronacion");
+            if (isLegal(board, m, pieces)) legalMoves.push_back(m);
+        }
+
         for (int incJ = -1; incJ < 2; incJ += 2) {
             if (j + incJ >= 0 and j + incJ < 8) {
                 Piece pieceToCapture = board[i + inc][j + incJ].piece;
-                if (pieceToCapture.type != "empty" and pieceToCapture.team != piece.team) 
-                    legalMoves.push_back(setMove(piece, pieceToCapture, "capture")); 
+                if (pieceToCapture.type != "empty" and pieceToCapture.team != piece.team) {
+                    Move m = setMove(piece, pieceToCapture, "capture");
+                    if (pieceToCapture.i % 7 == 0) m = setMove(piece, pieceToCapture, "coronacion");
+                    if (isLegal(board, m, pieces)) legalMoves.push_back(m);
+                }
             }
         }
         
         //doble avance
         if ((piece.team == "white" and i == 6) or (piece.team == "black" and i == 1)) 
-            if (board[i + 2 * inc][j].piece.type == "empty" and board[i + inc][j].piece.type == "empty") 
-                legalMoves.push_back(setMove(piece, board[i + 2 * inc][j].piece, "normal"));
+            if (board[i + 2 * inc][j].piece.type == "empty" and board[i + inc][j].piece.type == "empty") {
+                Move m = setMove(piece, board[i + 2 * inc][j].piece, "normal");
+                if (isLegal(board, m, pieces)) legalMoves.push_back(m);
+            }
             
         //en passant
-        if (previousMove.piece.type == "pawn" and abs(previousMove.piece.i - previousMove.i) == 2 and (previousMove.j - 1 == j or previousMove.j + 1 == j) and i == previousMove.i)
-            legalMoves.push_back(setMove(piece, board[previousMove.i][previousMove.j].piece, "passant"));
+        if (previousMove.piece.type == "pawn" and abs(previousMove.piece.i - previousMove.i) == 2 and (previousMove.j - 1 == j or previousMove.j + 1 == j) and i == previousMove.i) {
+            Move m = setMove(piece, board[previousMove.i][previousMove.j].piece, "passant");
+            if (isLegal(board, m, pieces)) legalMoves.push_back(m);
+        }
     }
     else if (piece.type == "knight") {
         
@@ -376,9 +423,13 @@ vector<Move> calculateLegalMoves(const Board& board, Piece piece, Move previousM
             for (int incJ = -2; incJ < 3; incJ += 4) {
                 if (i + incI >= 0 and i + incI < 8 and j + incJ >= 0 and j + incJ < 8) {
                     Piece pieceToCapture = board[i + incI][j + incJ].piece;
-                    if (pieceToCapture.type == "empty") legalMoves.push_back(setMove(piece, pieceToCapture, "normal"));
-                    else if (piece.team != pieceToCapture.team) 
-                        legalMoves.push_back(setMove(piece, pieceToCapture, "capture"));
+                    if (pieceToCapture.type == "empty") {
+                        Move m = setMove(piece, pieceToCapture, "normal");
+                        if (isLegal(board, m, pieces)) legalMoves.push_back(m);
+                    } else if (piece.team != pieceToCapture.team) {
+                        Move m = setMove(piece, pieceToCapture, "capture");
+                        if (isLegal(board, m, pieces)) legalMoves.push_back(m);
+                    }
                 }
             }
         }
@@ -387,9 +438,13 @@ vector<Move> calculateLegalMoves(const Board& board, Piece piece, Move previousM
             for (int incJ = -1; incJ < 2; incJ += 2) {
                 if (i + incI >= 0 and i + incI < 8 and j + incJ >= 0 and j + incJ < 8) {
                     Piece pieceToCapture = board[i + incI][j + incJ].piece;
-                    if (pieceToCapture.type == "empty") legalMoves.push_back(setMove(piece, pieceToCapture, "normal"));
-                    else if (piece.team != pieceToCapture.team) 
-                        legalMoves.push_back(setMove(piece, pieceToCapture, "capture"));
+                    if (pieceToCapture.type == "empty") {
+                        Move m = setMove(piece, pieceToCapture, "normal");
+                        if (isLegal(board, m, pieces)) legalMoves.push_back(m);
+                    } else if (piece.team != pieceToCapture.team) {
+                        Move m = setMove(piece, pieceToCapture, "capture");
+                        if (isLegal(board, m, pieces)) legalMoves.push_back(m);
+                    }
                 }
             }
         }
@@ -397,31 +452,31 @@ vector<Move> calculateLegalMoves(const Board& board, Piece piece, Move previousM
     return legalMoves;
 }
 
-vector<Move> calculateLegalMoves(const Board& board, Move previousMove, int turn) {
+vector<Move> calculateLegalMoves(const Board& board, Move previousMove, int turn, vector<Piece> pieces) {
     vector<Move> legalMoves;
     if (turn % 2 != 0) {
-        Piece king = getKing(whitePieces);
+        Piece king = getKing(pieces);
         whiteCheck = isSquareAttacked(board, board[king.i][king.j], king.team);
         if (whiteCheck) cout << "check boi !!!" << endl;
 	    for (int i = 0; i < 8; i++)
 	        for (int j = 0; j < 8; j++) {
 	            Piece piece = board[i][j].piece;
-	            if (piece.team == "white") insert(legalMoves, calculateLegalMoves(board, piece, previousMove));
+	            if (piece.team == "white") insert(legalMoves, calculateLegalMoves(board, piece, previousMove, pieces));
 	        }
 	} else {
-        Piece king = getKing(blackPieces);
+        Piece king = getKing(pieces);
         blackCheck = isSquareAttacked(board, board[king.i][king.j], king.team);
 		if (blackCheck) cout << "check boi !!!" << endl;
         for (int i = 0; i < 8; i++)
 	        for (int j = 0; j < 8; j++) {
 	        	Piece piece = board[i][j].piece;
-	            if (piece.team == "black") insert(legalMoves, calculateLegalMoves(board, piece, previousMove));
+	            if (piece.team == "black") insert(legalMoves, calculateLegalMoves(board, piece, previousMove, pieces));
 	        }
 	}
 	return legalMoves;
 }
 
-Board setBoard() {
+Board setBoard(vector<Piece> &whitePieces, vector<Piece> &blackPieces) {
     Board board(8, Row(8));
      for (int i = 0; i < 2; i++) {
         for (int j = 0; j < 8; j++) {
@@ -520,26 +575,34 @@ void checkCastling(Move mover) {
 }
 
 int main () {
-    Board board = setBoard();
+    vector<Piece> whitePieces, blackPieces;
+    Board board = setBoard(whitePieces, blackPieces);
     printBoard(board);
 
     Move previousMove;
     previousMove.piece.type = "empty";
 
+    bool endGame = false;
     int turn = 1;
 
-    vector<Move> legalMoves = calculateLegalMoves(board, previousMove, turn);
+    vector<Move> legalMoves = calculateLegalMoves(board, previousMove, turn, whitePieces);
 
     string mov;
-    while (cin >> mov) {
+    cin >> mov;
+    while (!endGame and mov != "exit") {
         Move mover = search(legalMoves, mov);
         if (mover.type != "null") {
-            move(board, mover, turn);
             checkCastling(mover);
+            if (turn % 2 != 0) {
+                move(board, mover, turn, whitePieces);
+                legalMoves = calculateLegalMoves(board, previousMove, turn, blackPieces);
+            } else {
+                move (board, mover, turn, blackPieces);
+                legalMoves = calculateLegalMoves(board, previousMove, turn, whitePieces);
+            }
             previousMove = mover;
             //cout << (isSquareAttacked(board, board[7][4], board[7][4].piece.team) ? "white king is in shambles" : "nope") << endl;
             //cout << (isSquareAttacked(board, board[0][4], board[0][4].piece.team) ? "black king is in shambles" : "nope") << endl;
-            legalMoves = calculateLegalMoves(board, previousMove, turn);
             /*for (int i = 0; i < whitePieces.size(); i++) {
                 Piece piece = whitePieces[i];
                 cout << piece.type << ": " << piece.i << ',' << piece.j << " " << piece.team << "             ";
@@ -549,5 +612,12 @@ int main () {
             printBoard(board);
             printVector(legalMoves);
         } else cout << "esto es embarazoso" << endl;
+
+        if (legalMoves.size() == 0) {
+            if (whiteCheck) cout << "Checkmate. Black wins!!!" << endl;
+            else if (blackCheck) cout << "Checkmate. White wins!!!" << endl;
+            else cout << "Stalemate! Draw :(" << endl;
+            endGame = true;
+        } else cin >> mov;
     }
 }
