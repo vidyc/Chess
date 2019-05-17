@@ -1,0 +1,119 @@
+1
+
+idioma1
+9
+_ 7
+a 13
+Ü 5
+ñ 1
+* 27
+\ 16
+é 20
+¥ 10
+¢ 10
+
+tabla_frec idioma1
+
+treecode idioma1
+
+codigos idioma1 todos
+
+codigos idioma1 ¢
+
+codigos idioma1 t
+
+tabla_frec idioma223
+
+treecode idioma223
+
+codigos idioma223 todos
+
+codigos idioma223 a
+
+anadir/modificar idioma223
+5
+z 3
+c 7
+a 1
+_ 5
+b 6
+
+tabla_frec idioma223
+
+treecode idioma223
+
+codigos idioma223 todos
+
+codigos idioma223 a
+
+codifica idioma223 abc
+
+codifica idioma223 añc
+
+codifica idioma1 aüñ*¢
+
+codifica idioma1 \¢é_â*H
+
+codifica idioma1 J
+
+codifica idioma1 ¢\Üéa*
+
+decodifica idioma223 111001110
+
+decodifica idioma223 11100111000
+
+codifica idioma33 1
+
+decodifica idioma33 11101
+
+anadir/modificar idioma1
+6
+a 5
+ñ 1
+¢ 6
+J 12
+w 3
+: 22
+
+tabla_frec idioma1
+
+treecode idioma1 
+
+codigos idioma1 todos
+
+codigos idioma1 J
+
+codigos idioma1 t
+
+codifica idioma1 Jañ¥¥
+
+codifica idioma1 añl,
+
+decodifica idioma1 110101010101010101
+
+decodifica idioma1 1101010101010101010101
+
+decodifica idioma1 1
+
+decodifica idioma1 1110001101010101001110001011
+
+fin
+
+tabla frec ordenada alfabeticamente
+
+treecode ordenado por frecuencia de menos a mas, si empatan
+se ordena alfabeticamente
+
+codigos se generan con el treecode, si este se ha hecho bien,
+solo hay que comprobar si se ha vuelto a generar todo el map de codigos
+
+en cuanto a generacion de idiomas eso
+
+a la hora de codificar, unica caso extremo es el de los caracteres especiales,
+hay que comprobar si se tienen en cuenta
+
+a la hora de decodificar, comprobar que el algoritmo funciona y que devuelve el indice correcto
+
+modificar/añadir añadir no hay problema, modificar hay que comprobar si se han vuelto a generar bien todas las estructuras
+
+vale
