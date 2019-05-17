@@ -1,0 +1,269 @@
+Tabla de frecuencias de idioma1:
+* 27
+\ 16
+_ 7
+a 13
+¢ 10
+¥ 10
+Ü 5
+é 20
+ñ 1
+
+Treecode de idioma1:
+recorrido en preorden:
+*\¢¥_Üñaé 109
+_Üñaé 46
+é 20
+_Üña 26
+_Üñ 13
+Üñ 6
+ñ 1
+Ü 5
+_ 7
+a 13
+*\¢¥ 63
+* 27
+\¢¥ 36
+\ 16
+¢¥ 20
+¢ 10
+¥ 10
+recorrido en inorden:
+é 20
+_Üñaé 46
+ñ 1
+Üñ 6
+Ü 5
+_Üñ 13
+_ 7
+_Üña 26
+a 13
+*\¢¥_Üñaé 109
+* 27
+*\¢¥ 63
+\ 16
+\¢¥ 36
+¢ 10
+¢¥ 20
+¥ 10
+
+Codigos de idioma1:
+* 10
+\ 110
+_ 0101
+a 011
+¢ 1110
+¥ 1111
+Ü 01001
+é 00
+ñ 01000
+
+Codigo de ¢ en idioma1:
+¢ 1110
+
+Codigo de t en idioma1:
+El idioma no existe o el caracter no esta en el idioma
+
+Tabla de frecuencias de idioma223:
+El idioma no existe
+
+Treecode de idioma223:
+El idioma no existe
+
+Codigos de idioma223:
+El idioma no existe
+
+Codigo de a en idioma223:
+El idioma no existe o el caracter no esta en el idioma
+
+Anadido idioma223
+
+Tabla de frecuencias de idioma223:
+_ 5
+a 1
+b 6
+c 7
+z 3
+
+Treecode de idioma223:
+recorrido en preorden:
+_azbc 22
+_az 9
+az 4
+a 1
+z 3
+_ 5
+bc 13
+b 6
+c 7
+recorrido en inorden:
+a 1
+az 4
+z 3
+_az 9
+_ 5
+_azbc 22
+b 6
+bc 13
+c 7
+
+Codigos de idioma223:
+_ 01
+a 000
+b 10
+c 11
+z 001
+
+Codigo de a en idioma223:
+a 000
+
+Codifica en idioma223 el texto:
+abc
+0001011
+
+Codifica en idioma223 el texto:
+añc
+El texto no pertenece al idioma; primer caracter que falla: ñ
+
+Codifica en idioma1 el texto:
+aüñ*¢
+El texto no pertenece al idioma; primer caracter que falla: ü
+
+Codifica en idioma1 el texto:
+\¢é_â*H
+El texto no pertenece al idioma; primer caracter que falla: â
+
+Codifica en idioma1 el texto:
+J
+El texto no pertenece al idioma; primer caracter que falla: J
+
+Codifica en idioma1 el texto:
+¢\Üéa*
+1110110010010001110
+
+Decodifica en idioma223 el texto:
+111001110
+El texto no procede de una codificacion del idioma; ultima posicion del codigo correspondiente al ultimo caracter que se podria decodificar: 8
+
+Decodifica en idioma223 el texto:
+11100111000
+cb_ca
+
+Codifica en idioma33 el texto:
+1
+El idioma no existe
+
+Decodifica en idioma33 el texto:
+11101
+El idioma no existe
+
+Modificado idioma1
+
+Tabla de frecuencias de idioma1:
+* 27
+: 22
+J 12
+\ 16
+_ 7
+a 18
+w 3
+¢ 16
+¥ 10
+Ü 5
+é 20
+ñ 2
+
+Treecode de idioma1:
+recorrido en preorden:
+*J¥:é\¢_wñÜa 158
+\¢_wñÜa 67
+\¢ 32
+\ 16
+¢ 16
+_wñÜa 35
+_wñÜ 17
+_ 7
+wñÜ 10
+wñ 5
+ñ 2
+w 3
+Ü 5
+a 18
+*J¥:é 91
+:é 42
+é 20
+: 22
+*J¥ 49
+J¥ 22
+¥ 10
+J 12
+* 27
+recorrido en inorden:
+\ 16
+\¢ 32
+¢ 16
+\¢_wñÜa 67
+_ 7
+_wñÜ 17
+ñ 2
+wñ 5
+w 3
+wñÜ 10
+Ü 5
+_wñÜa 35
+a 18
+*J¥:é\¢_wñÜa 158
+é 20
+:é 42
+: 22
+*J¥:é 91
+¥ 10
+J¥ 22
+J 12
+*J¥ 49
+* 27
+
+Codigos de idioma1:
+* 111
+: 101
+J 1101
+\ 000
+_ 0100
+a 011
+w 010101
+¢ 001
+¥ 1100
+Ü 01011
+é 100
+ñ 010100
+
+Codigo de J en idioma1:
+J 1101
+
+Codigo de t en idioma1:
+El idioma no existe o el caracter no esta en el idioma
+
+Codifica en idioma1 el texto:
+Jañ¥¥
+110101101010011001100
+
+Codifica en idioma1 el texto:
+añl,
+El texto no pertenece al idioma; primer caracter que falla: l
+
+Decodifica en idioma1 el texto:
+110101010101010101
+El texto no procede de una codificacion del idioma; ultima posicion del codigo correspondiente al ultimo caracter que se podria decodificar: 16
+
+Decodifica en idioma1 el texto:
+1101010101010101010101
+Jwww
+
+Decodifica en idioma1 el texto:
+1
+El texto no procede de una codificacion del idioma; ultima posicion del codigo correspondiente al ultimo caracter que se podria decodificar: 0
+
+Decodifica en idioma1 el texto:
+1110001101010101001110001011
+*\Jw¢¥Ü
+
