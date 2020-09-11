@@ -55,7 +55,7 @@ vector<move> calculateLegalMoves() {
 				if (upRight) {
 					piece m = board[x + i][y - i];
 					if (m.empty) {
-						legalMoves.pushback(/* me falta definir lo que es un movimiento todavia*/)
+						legalMoves.pushback(/* e falta definir lo que es un movimiento todavia*/)
 					} else if (m.idn >= "a" and m.idn <= "z") {
 						legalMoves.pushback(/**/);
 						upRight = 0;
