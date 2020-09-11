@@ -1,27 +1,3 @@
-
-struct piece {
-	bool empty;
-	char idn;
-	int rank;
-	char file;
-}
-
-struct move {
-	piece origin, destination;
-	bool castling;
-	bool capture;
-	char promotion; // (N, B, R, Q, -)
-	string notation;
-	
-	move(piece o, piece d, bool cast, bool capt, char prom) {
-		origin = o;
-		destination = d;
-		castling = cast;
-		capture = capt;
-		promotion = prom;
-	}	
-}
-
 vector<move> calculateLegalMoves() {
 	//sabemos la "x" y la "y"
 	vector<move> legalMoves;

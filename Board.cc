@@ -38,3 +38,7 @@ void Board::doMove(const string& move) {
 		
 	}
 }
+
+vector<Move> Board::calculateLegalMoves() {
+
+}
