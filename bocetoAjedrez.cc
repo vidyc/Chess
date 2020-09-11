@@ -47,7 +47,7 @@ vector<move> calculateLegalMoves() {
 					if (m.empty) {
 						legalMoves.pushback(move(board[x][y], m, 0, 0, 0, 0, '-'));
 					} else if (m.idn >= "a" and m.idn <= "z") {
-						legalMoves.pushback(/**/);
+						legalMoves.pushback(move(board[x][y], m, 0, 1, 0, 0, '-'));
 						upLeft = 0;
 					} else upLeft = 0;
 				}
