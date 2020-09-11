@@ -10,25 +10,21 @@ struct move {
 	piece origin, destination;
 	bool castling;
 	bool capture;
-	bool check;
-	bool mate;
 	char promotion; // (N, B, R, Q, -)
 	string notation;
 	
-	move(piece o, piece d, bool cast, bool capt, bool check, bool m, char prom) {
+	move(piece o, piece d, bool cast, bool capt, char prom) {
 		origin = o;
 		destination = d;
 		castling = cast;
 		capture = capt;
-		this -> check = check;
-		mate = m;
 		promotion = prom;
 	}	
 }
 
 vector<move> calculateLegalMoves() {
 	//sabemos la "x" y la "y"
-	vector<moves> legalMoves;
+	vector<move> legalMoves;
 
 	if (white) {
 		if (board[x][y].idn == "P") {
@@ -45,9 +41,9 @@ vector<move> calculateLegalMoves() {
 				if (upLeft) {
 					piece m = board[x - i][y - i];
 					if (m.empty) {
-						legalMoves.pushback(move(board[x][y], m, 0, 0, 0, 0, '-'));
+						legalMoves.pushback(move(board[x][y], m, 0, 0, '-'));
 					} else if (m.idn >= "a" and m.idn <= "z") {
-						legalMoves.pushback(move(board[x][y], m, 0, 1, 0, 0, '-'));
+						legalMoves.pushback(move(board[x][y], m, 0, 1, '-'));
 						upLeft = 0;
 					} else upLeft = 0;
 				}
