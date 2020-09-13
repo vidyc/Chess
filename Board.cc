@@ -194,7 +194,7 @@ void Board::setBoard() {
 		castlingRights[i] = (cast.find(test[i]) != string::npos);
 	}
 
-	passant = pass;
+	passant = Piece(1, !white, '0', pass[1] + '0' - 1, pass[0] - 'a');
 }
 
 void Board::display() {

@@ -7,7 +7,7 @@ class Board {
 		bool white;
 		bool check;
 		vector<bool> castlingRights;
-		string passant;
+		Piece passant;
 		int halfmoves;
 		int turn;
 
