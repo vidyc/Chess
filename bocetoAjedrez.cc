@@ -141,7 +141,27 @@ vector<move> calculateLegalMoves() {
 					legalMoves.push_back(Move(board[x][y], board[x][y - 2], 1, 0, '-'));
 				} 
 			} else if (p.getType() == Knight) {
+				for (int i = -2; i <= 2; i += 4) {
+					for (int j = -1; j <= 1; j += 2) {
+						if (x + i >= 0 and x + i < rows and y + j >= 0 and y + j < rows) {
+							Piece m = board[x + i][y + j];
+							if (m.isEmpty()) {
+								legalMoves.push_back(Move(board[x][y], m, 0, 0, '-'));
+							} else if (!m.isWhite()) {
+								legalMoves.push_back(Move(board[x][y], m, 0, 1, '-'));
+							}
+						}
 
+						if (x + j >= 0 and x + j < rows and y + i >= 0 and y + i < rows) {
+							Piece m = board[x + j][y + i];
+							if (m.isEmpty()) {
+								legalMoves.push_back(Move(board[x][y], m, 0, 0, '-'));
+							} else if (!m.isWhite()) {
+								legalMoves.push_back(Move(board[x][y], m, 0, 1, '-'));
+							}
+						}
+					}
+				}
 			} else if (p.getType() == Bishop) {
 				calculateLegalMovesBishop(legalMoves, x, y);
 			} else if (p.getType() == Rook) {
