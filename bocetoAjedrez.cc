@@ -164,7 +164,7 @@ vector<move> calculateLegalMoves() {
 				}
 			} else if (p.getType() == Bishop) {
 				calculateLegalMovesBishop(legalMoves, x, y);
-			} else if (p.getType() == Rook) {
+			} else if (p.getTyxpe() == Rook) {
 				calculateLegalMovesRook(legalMoves, x, y);
 			} else if (p.getType() == Queen) {
 				calculateLegalMovesBishop(legalMoves, x, y);
