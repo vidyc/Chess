@@ -2,11 +2,21 @@
 
 class Board {
 	private:
-		const int rows;
+		int rows;
 		string FEN;
 		bool white;
+		bool check;
+		vector<bool> castlingRights;
+		string passant;
+		int halfmoves;
+		int turn;
 
-		
+		vector<vector<Piece> > board;
+		vector<Piece*> whitePieces;
+		vector<Piece*> blackPieces;
+		Piece* whiteKing;
+		Piece* blackKing;
+
 	public:
 		Board();
 		Board(const string& FEN);
@@ -16,5 +26,7 @@ class Board {
 
 		vector<Move> calculateLegalMoves();
 	private:
+		bool isKingInCheck();
 		string getFEN();
+		void setBoard();
 };
