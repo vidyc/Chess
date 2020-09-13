@@ -15,12 +15,7 @@ Board::Board(const string& FEN) {
 }
 
 bool Board::isKingInCheck() {
-	bool check = 0;
-	bool up = 1, right = 1, left = 1, down = 1;
-	bool upLeft = 1, upRight = 1, downLeft = 1, downRight = 1;
-
 	int x, y;
-
 	if (white) {
 		x = whiteKing -> getRank();
 		y = whiteKing -> getFileAsInt();
@@ -28,6 +23,13 @@ bool Board::isKingInCheck() {
 		x = blackKing -> getRank();
 		y = blackKing -> getFileAsInt();
 	}
+	return isSquareAttacked(x, y);
+}
+
+bool Board::isSquareAttacked(int x, int y) {
+	bool check = 0;
+	bool up = 1, right = 1, left = 1, down = 1;
+	bool upLeft = 1, upRight = 1, downLeft = 1, downRight = 1;
 
 	for (int i = 1; i < 8 and !check and (up or left or right or down or upLeft 
 		or upRight or downLeft or downRight); i++) {
@@ -196,7 +198,6 @@ void Board::setBoard() {
 }
 
 void Board::display() {
-	//ME LA SUDA AHORA
 	for (int i = 0; i < rows; i++) {
 		for (int j = 0; j < rows; j++) {
 			cout << board[i][j].getIdn() << ' ';

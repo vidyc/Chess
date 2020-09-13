@@ -26,6 +26,7 @@ class Board {
 
 		vector<Move> calculateLegalMoves();
 	private:
+		bool isSquareAttacked();
 		bool isKingInCheck();
 		string getFEN();
 		void setBoard();
