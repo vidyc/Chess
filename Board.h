@@ -24,10 +24,14 @@ class Board {
 		void display();
 		void doMove(const string& move);
 
-		vector<Move> calculateLegalMoves();
+		void calculateLegalMoves(vector<Move> &legalMoves);
 	private:
-		bool isSquareAttacked();
+		void calculateLegalMovesBishop(vector<Move> &legalMoves, int x, int y);
+		void calculateLegalMovesRook(vector<Move> &legalMoves, int x, int y);
+
+		bool isSquareAttacked(int x, int y);
 		bool isKingInCheck();
+
 		string getFEN();
 		void setBoard();
 };
