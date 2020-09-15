@@ -9,7 +9,7 @@ int main() {
 		string move;
 		do { 
 			cin >> move;
-		} while (b.isMoveLegal(move));
+		} while (!b.isMoveLegal(move));
 		b.doMove(move);
 	}
 }

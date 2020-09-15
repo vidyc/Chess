@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <map>
 using namespace std;
 
 enum PieceType {
@@ -33,4 +34,6 @@ class Piece {
 		char getFile();
 		int getFileAsInt();
 		int getRank();
+
+		void copyPiece(Piece& p);
 };

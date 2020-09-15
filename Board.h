@@ -18,7 +18,7 @@ class Board {
 		Piece* whiteKing;
 		Piece* blackKing;
 
-		vector<Move> legalMoves;
+		map<string, Move> legalMoves;
 
 	public:
 		Board();
@@ -26,7 +26,7 @@ class Board {
 
 		void display();
 		
-		void doMove(const string& move);
+		void doMove(string& move);
 		bool isMoveLegal(const string& move);
 
 		bool isGameOver();
@@ -38,6 +38,8 @@ class Board {
 
 		bool isSquareAttacked(int x, int y);
 		bool isKingInCheck();
+
+		int findPiece(vector<Piece*> v, int rank, int file); 
 
 		string getFEN();
 		void setBoard();

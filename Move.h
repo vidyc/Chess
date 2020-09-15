@@ -11,6 +11,7 @@ class Move {
 		string notation;
 	
 	public:
+		Move();
 		Move(Piece o, Piece d, bool cast, bool capt, bool pass, char prom);	
 		
 		void setNotation(const string& n);

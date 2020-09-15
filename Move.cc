@@ -1,5 +1,9 @@
 #include "Move.h"
 
+Move::Move() {
+	
+}
+
 Move::Move(Piece o, Piece d, bool cast, bool capt, bool pass, char prom) {		
 	origin = o;
 	destination = d;

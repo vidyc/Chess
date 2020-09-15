@@ -26,6 +26,13 @@ bool Piece::isWhite() {
 	return white;
 }
 
+void Piece::copyPiece(Piece& p) {
+	empty = p.empty;
+	white = p.white;
+	type = p.type;
+	idn = p.idn;
+}
+
 void Piece::printType() {
 	switch (type) {
 		case Pawn:
