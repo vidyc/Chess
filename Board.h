@@ -10,6 +10,7 @@ class Board {
 		Piece passant;
 		int halfmoves;
 		int turn;
+		bool gameOver;
 
 		vector<vector<Piece> > board;
 		vector<Piece*> whitePieces;
@@ -17,17 +18,23 @@ class Board {
 		Piece* whiteKing;
 		Piece* blackKing;
 
+		vector<Move> legalMoves;
+
 	public:
 		Board();
 		Board(const string& FEN);
 
 		void display();
+		
 		void doMove(const string& move);
+		bool isMoveLegal(const string& move);
 
-		void calculateLegalMoves(vector<Move> &legalMoves);
+		bool isGameOver();
+
 	private:
-		void calculateLegalMovesBishop(vector<Move> &legalMoves, int x, int y);
-		void calculateLegalMovesRook(vector<Move> &legalMoves, int x, int y);
+		void calculateLegalMoves();
+		void calculateLegalMovesBishop(int x, int y);
+		void calculateLegalMovesRook(int x, int y);
 
 		bool isSquareAttacked(int x, int y);
 		bool isKingInCheck();

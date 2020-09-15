@@ -1,5 +1,6 @@
 
 void calculateLegalMovesBishop(vector<move> &legalMoves, int x, int y) {
+	cout << legalMoves.size() << endl;
 	bool upLeft = 1, upRight = 1, downLeft = 1, downRight = 1;
 
 	for (int i = 0; i < 8 and (upLeft or upRight or downLeft or downRight); i++) {
@@ -43,6 +44,7 @@ void calculateLegalMovesBishop(vector<move> &legalMoves, int x, int y) {
 			} else downRight = 0;
 		}
 	} 
+	cout << legalMoves.size() << endl;
 }
 
 void calculateLegalMovesRook(vector<move> &legalMoves, int x, int y) {
@@ -172,7 +174,9 @@ vector<move> calculateLegalMoves() {
 			} else if (p.getType() == Queen) {
 				calculateLegalMovesBishop(legalMoves, x, y);
 				calculateLegalMovesRook(legalMoves, x, y);
-			} 
+			} else {
+				p.printType();
+			}
 		}	
 	} else {
 		int size = blackPieces.size();

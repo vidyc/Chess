@@ -16,6 +16,10 @@ class Move {
 		void setNotation(const string& n);
 		string getNotation();
 
+		Piece getOrigin();
+		Piece getDestination();
+		bool isCapture();
+		bool allowsPassant();
 	private:
 		void processNotation();
 };

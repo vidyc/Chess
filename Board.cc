@@ -4,14 +4,12 @@ Board::Board() {
 	rows = 8;
 	FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 	setBoard();
-	check = isKingInCheck();
 }
 
 Board::Board(const string& FEN) {
 	rows = 8;
 	this -> FEN = FEN;
 	setBoard();
-	check = isKingInCheck();
 }
 
 bool Board::isKingInCheck() {
@@ -148,6 +146,7 @@ void Board::setBoard() {
 	int length = FEN.length();
 	int field = 1;
 	int file = 0, rank = 0;
+	gameOver = 0;
 	bool found = false;
 	string cast = "";
 	string pass = "";
@@ -164,8 +163,8 @@ void Board::setBoard() {
 				int n = FEN[i] - '0';
 				for (int i = 0; i < n; i++) {
 					board[rank][file] = Piece(1, 0, '0', rank, file);
+					file++;
 				}
-				file += n;
 			} else {
 				board[rank][file] = Piece(0, FEN[i] < 'a', FEN[i], rank, file);
 				if (FEN[i] >= 'A' and FEN[i] <= 'Z') whitePieces.push_back(&board[rank][file]);
@@ -195,6 +194,8 @@ void Board::setBoard() {
 	}
 
 	passant = Piece(1, !white, '0', pass[1] + '0' - 1, pass[0] - 'a');
+
+	check = isKingInCheck();
 }
 
 void Board::display() {
@@ -204,7 +205,34 @@ void Board::display() {
 		}
 		cout << endl;
 	}
+
 	cout << endl;
+
+	calculateLegalMoves();
+
+	for (int i = 0; i < legalMoves.size(); i++) {
+		cout << legalMoves[i].getNotation() << " ";
+
+		//Piece o = legalMoves[i].getOrigin();
+		//Piece d = legalMoves[i].getDestination();
+
+		//cout << o.getRank() << " " << o.getFileAsInt() << endl;
+		//d.printType();
+		//cout << " at " << d.getRank() << " " << d.getFileAsInt() << " " << d.getFile() << endl;
+
+	}
+
+	cout << endl;
+}
+
+bool Board::isMoveLegal(const string& move) {
+	bool found = 0;
+	int i = 0, size = legalMoves.size();
+	while (!found and i < size) {
+		if (legalMoves[i] == move) found = 1;
+		i++;
+	}
+	return found;
 }
 
 void Board::doMove(const string& move) {
@@ -212,16 +240,21 @@ void Board::doMove(const string& move) {
 	//pos: the move is executed and the FEN is modified
 
 	if (white) {
-		
+				
 	} else {
 		
 	}
+
+	display();
 }
 
-void Board::calculateLegalMovesBishop(vector<Move> &legalMoves, int x, int y) {
-	bool upLeft = 1, upRight = 1, downLeft = 1, downRight = 1;
+bool Board::isGameOver() {
+	return gameOver;
+}
 
-	for (int i = 0; i < 8 and (upLeft or upRight or downLeft or downRight); i++) {
+void Board::calculateLegalMovesBishop(int x, int y) {
+	bool upLeft = 1, upRight = 1, downLeft = 1, downRight = 1;
+	for (int i = 1; i < 8 and (upLeft or upRight or downLeft or downRight); i++) {
 		if (upLeft and x - i >= 0 and y - i >= 0) {
 			Piece m = board[x - i][y - i];
 			if (m.isEmpty()) {
@@ -264,10 +297,10 @@ void Board::calculateLegalMovesBishop(vector<Move> &legalMoves, int x, int y) {
 	} 
 }
 
-void Board::calculateLegalMovesRook(vector<Move> &legalMoves, int x, int y) {
+void Board::calculateLegalMovesRook(int x, int y) {
 	bool up = 1, right = 1, left = 1, down = 1;
 
-	for (int i = 0; i < 8 and (up or left or right or down); i++) {
+	for (int i = 1; i < 8 and (up or left or right or down); i++) {
 		if (up and x - i >= 0) {
 			Piece m = board[x - i][y];
 			if (m.isEmpty()) {
@@ -310,7 +343,7 @@ void Board::calculateLegalMovesRook(vector<Move> &legalMoves, int x, int y) {
 	} 
 }
 
-void Board::calculateLegalMoves(vector<Move> &legalMoves) {
+void Board::calculateLegalMoves() {
 	legalMoves = vector<Move> ();
 
 	if (white) {
@@ -384,12 +417,12 @@ void Board::calculateLegalMoves(vector<Move> &legalMoves) {
 					}
 				}
 			} else if (p.getType() == Bishop) {
-				calculateLegalMovesBishop(legalMoves, x, y);
+				calculateLegalMovesBishop(x, y);
 			} else if (p.getType() == Rook) {
-				calculateLegalMovesRook(legalMoves, x, y);
+				calculateLegalMovesRook(x, y);
 			} else if (p.getType() == Queen) {
-				calculateLegalMovesBishop(legalMoves, x, y);
-				calculateLegalMovesRook(legalMoves, x, y);
+				calculateLegalMovesBishop(x, y);
+				calculateLegalMovesRook(x, y);
 			} 
 		}	
 	} else {
@@ -463,12 +496,12 @@ void Board::calculateLegalMoves(vector<Move> &legalMoves) {
 					}
 				}
 			} else if (p.getType() == Bishop) {
-				calculateLegalMovesBishop(legalMoves, x, y);
+				calculateLegalMovesBishop(x, y);
 			} else if (p.getType() == Rook) {
-				calculateLegalMovesRook(legalMoves, x, y);
+				calculateLegalMovesRook(x, y);
 			} else if (p.getType() == Queen) {
-				calculateLegalMovesBishop(legalMoves, x, y);
-				calculateLegalMovesRook(legalMoves, x, y);
+				calculateLegalMovesBishop(x, y);
+				calculateLegalMovesRook(x, y);
 			} 
 		}	
 	}

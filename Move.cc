@@ -10,6 +10,22 @@ Move::Move(Piece o, Piece d, bool cast, bool capt, bool pass, char prom) {
 	processNotation();
 }
 
+Piece Move::getOrigin() {
+	return origin;
+}
+
+Piece Move::getDestination() {
+	return destination;
+}
+
+bool Move::isCapture() {
+	return capture;
+}
+
+bool Move::allowsPassant() {
+	return passant;
+}
+
 void Move::setNotation(const string& n) {
 	this->notation = n;
 }
@@ -57,7 +73,6 @@ void Move::processNotation() {
 			notation.push_back('x');
 		}
 		notation.push_back(destination.getFile());
-		cout << destination.getRank() << endl;
 		notation.push_back((8 - destination.getRank()) + '0');
 	}
 }

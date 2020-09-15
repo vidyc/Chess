@@ -27,6 +27,7 @@ class Piece {
 		Piece(bool e, bool w, char i, int r, int f);
 		bool isEmpty();
 		bool isWhite();
+		void printType();
 		PieceType getType();
 		char getIdn();
 		char getFile();
