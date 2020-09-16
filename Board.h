@@ -38,6 +38,7 @@ class Board {
 
 		bool isSquareAttacked(int x, int y);
 		bool isKingInCheck();
+		bool isKingInCheckmate();
 
 		int findPiece(vector<Piece*> v, int rank, int file); 
 

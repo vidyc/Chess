@@ -4,7 +4,7 @@ Move::Move() {
 	
 }
 
-Move::Move(Piece o, Piece d, bool cast, bool capt, bool pass, char prom) {		
+Move::Move(Piece o, Piece d, bool cast, bool capt, bool pass, bool prom) {		
 	origin = o;
 	destination = d;
 	castling = cast;
@@ -28,6 +28,10 @@ bool Move::isCapture() {
 
 bool Move::allowsPassant() {
 	return passant;
+}
+
+bool Move::isPromotion() {
+	return promotion;
 }
 
 void Move::setNotation(const string& n) {

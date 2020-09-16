@@ -7,7 +7,7 @@ class Move {
 		bool castling;
 		bool capture;
 		bool passant;
-		char promotion; // (N, B, R, Q, -)
+		bool promotion; // (N, B, R, Q, -)
 		string notation;
 	
 	public:
@@ -21,6 +21,7 @@ class Move {
 		Piece getDestination();
 		bool isCapture();
 		bool allowsPassant();
+		bool isPromotion();
 	private:
 		void processNotation();
 };
