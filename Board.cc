@@ -38,8 +38,8 @@ bool Board::isKingInCheckmate() {
 
 	for (int i = -1; mate and i <= 1; i++) {
 		for (int j = -1; mate and j <= 1; j++) {
-			if (!(i == 0 and j == 0)) {
-				mate = isSquareAttacked(i, j);
+			if (!(i == 0 and j == 0) and x + i >= 0 and x + i < rows and y + j >= 0 and y + j < rows) {
+				mate = isSquareAttacked(x + i, y + j);
 			}
 		}
 	}
@@ -246,6 +246,8 @@ void Board::display() {
 	}
 
 	cout << endl;
+
+	cout << FEN << endl;
 }
 
 bool Board::isMoveLegal(const string& move) {
@@ -260,6 +262,80 @@ int Board::findPiece(vector<Piece*> v, int rank, int file) {
 		i++;
 	}
 	return i;
+}
+
+void Board::updateFEN(Move &m) {
+	string aux = "";
+	int size = board.size();
+	for (int i = 0; i < size; i++) {
+		int space = 0;
+		for (int j = 0; j < size; j++) {
+			Piece p = board[i][j];
+			char c;
+			if (space != 0 and p.getType() != Empty) {
+				aux.push_back(space + '0');
+				space = 0;
+			}
+			switch (p.getType()) {
+				case Pawn:
+					p.isWhite() ? c = 'P' : c = 'p';
+				break;
+				case Bishop:
+					p.isWhite() ? c = 'B' : c = 'b';
+				break;
+				case Knight:
+					p.isWhite() ? c = 'N' : c = 'n';
+				break;
+				case Rook:
+					p.isWhite() ? c = 'R' : c = 'r';
+				break;
+				case Queen:
+					p.isWhite() ? c = 'Q' : c = 'q';
+				break;
+				case King:
+					p.isWhite() ? c = 'K' : c = 'k';
+				break;
+				case Empty:
+					space++;
+				break;
+			}
+			if (p.getType() != Empty)
+				aux.push_back(c);
+		}
+		space = 0;
+		if (i != size - 1) aux.push_back('/');
+	}
+
+	aux.push_back(' ');
+
+	if (white) aux.push_back('w');
+	else aux.push_back('b');
+
+	aux.push_back(' ');
+
+	if (castlingRights[0]) aux.push_back('K');
+	else if (castlingRights[1]) aux.push_back('Q');
+	else if (castlingRights[2]) aux.push_back('k');
+	else if (castlingRights[3]) aux.push_back('q');
+
+	aux.push_back(' ');
+
+	if (m.allowsPassant()) {
+		Piece d = m.getDestination();
+		aux.push_back(d.getFileAsInt());
+		if (white) aux.push_back(d.getRank() + 1);
+		else aux.push_back(d.getRank() - 1);
+	} else aux.`push_back('-');
+
+	aux.push_back(' ');
+
+	aux.push_back(halfmoves + '0');
+
+	aux.push_back(' ');
+
+	aux.push_back(turn + '0');
+
+	FEN = aux;
 }
 
 void Board::doMove(string& move) {
@@ -324,6 +400,8 @@ void Board::doMove(string& move) {
 	check = isKingInCheck();
 
 	if (check) gameOver = isKingInCheckmate();
+
+	updateFEN(m);
 }
 
 bool Board::isGameOver() {

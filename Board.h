@@ -36,6 +36,8 @@ class Board {
 		void calculateLegalMovesBishop(int x, int y);
 		void calculateLegalMovesRook(int x, int y);
 
+		void updateFEN(Move &m);
+
 		bool isSquareAttacked(int x, int y);
 		bool isKingInCheck();
 		bool isKingInCheckmate();

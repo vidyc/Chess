@@ -3,7 +3,7 @@
 Piece::Piece() {
 	empty = 0;
 	white = 0;
-	type = static_cast<PieceType>('0');
+	type = Empty;
 	idn = '0';
 	rank = -1;
 	file = -1;

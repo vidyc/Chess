@@ -12,7 +12,7 @@ class Move {
 	
 	public:
 		Move();
-		Move(Piece o, Piece d, bool cast, bool capt, bool pass, char prom);	
+		Move(Piece o, Piece d, bool cast, bool capt, bool pass, bool prom);	
 		
 		void setNotation(const string& n);
 		string getNotation();
