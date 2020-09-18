@@ -4,7 +4,7 @@ Piece::Piece() {
 	empty = 0;
 	white = 0;
 	type = Empty;
-	idn = '0';
+	idn = '.';
 	rank = -1;
 	file = -1;
 }
@@ -13,7 +13,7 @@ Piece::Piece(bool e, bool w, char i, int r, int f) :
 empty(e), white(w), idn(i), rank(r), file(f + 'a') { 
 
 	char t = i;
-	if (t != '0' and t < 'a') t += ('a' - 'A');
+	if (t != '.' and t < 'a') t += ('a' - 'A');
 
 	type = static_cast<PieceType>(t);
 }
@@ -56,7 +56,7 @@ void Piece::setType(PieceType t) {
 			white ? idn = 'K' : idn = 'k';
 		break;
 		case Empty:
-			idn = '0';
+			idn = '.';
 		break;
 	}
 }

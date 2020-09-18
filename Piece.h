@@ -11,7 +11,7 @@ enum PieceType {
 	Rook = 'r', 
 	Queen = 'q',
 	King = 'k',
-	Empty = '0'
+	Empty = '.'
 };
 
 class Piece {

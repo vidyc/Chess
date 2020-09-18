@@ -186,7 +186,7 @@ void Board::setBoard() {
 			} else if (FEN[i] >= '1' and FEN[i] <= '8') {
 				int n = FEN[i] - '0';
 				for (int i = 0; i < n; i++) {
-					board[rank][file] = Piece(1, 0, '0', rank, file);
+					board[rank][file] = Piece(1, 0, '.', rank, file);
 					file++;
 				}
 			} else {
@@ -217,21 +217,23 @@ void Board::setBoard() {
 		castlingRights[i] = (cast.find(test[i]) != string::npos);
 	}
 
-	passant = Piece(1, !white, '0', pass[1] + '0' - 1, pass[0] - 'a');
+	passant = Piece(1, !white, '.', pass[1] + '0' - 1, pass[0] - 'a');
 
 	check = isKingInCheck();
 }
 
 void Board::display() {
+	cout << "  ABCDEFGH" << endl;
 	for (int i = 0; i < rows; i++) {
+		cout << 8 - i << "|";
 		for (int j = 0; j < rows; j++) {
-			cout << board[i][j].getIdn() << ' ';
+			cout << board[i][j].getIdn() << "";
 		}
-		cout << endl;
+		cout << "|" << 8 - i << endl;
 	}
+	cout << "  ABCDEFGH" << endl;
 
 	cout << endl;
-
 	calculateLegalMoves();
 
 	for (auto it = legalMoves.begin(); it != legalMoves.end(); it++) {
@@ -351,7 +353,7 @@ void Board::doMove(string& move) {
 	int x2 = d.getRank(), y2 = d.getFileAsInt();
 
 	board[x2][y2].copyPiece(board[x1][y1]);
-	board[x1][y1] = Piece(1, 0, '0', x1, y1);
+	board[x1][y1] = Piece(1, 0, '.', x1, y1);
 	
 	halfmoves++;
 
@@ -364,7 +366,7 @@ void Board::doMove(string& move) {
 			if (!m.isPassant()) {
 				index2 = findPiece(blackPieces, x2, y2);
 			} else {
-				board[x1][y2] = Piece(1, 0, '0', x1, y2);
+				board[x1][y2] = Piece(1, 0, '.', x1, y2);
 				index2 = findPiece(blackPieces, x1, y2);
 			}
 
@@ -391,7 +393,7 @@ void Board::doMove(string& move) {
 			if (!m.isPassant()) {
 				index2 = findPiece(whitePieces, x2, y2);	
 			} else {
-				board[x1][y2] = Piece(1, 0, '0', x1, y2);
+				board[x1][y2] = Piece(1, 0, '.', x1, y2);
 				index2 = findPiece(whitePieces, x1, y2);
 			}
 
