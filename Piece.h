@@ -35,5 +35,6 @@ class Piece {
 		int getFileAsInt();
 		int getRank();
 
+		void setType(PieceType t);
 		void copyPiece(Piece& p);
 };

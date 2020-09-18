@@ -7,12 +7,13 @@ class Move {
 		bool castling;
 		bool capture;
 		bool passant;
+		bool allowspassant;
 		bool promotion; // (N, B, R, Q, -)
 		string notation;
 	
 	public:
 		Move();
-		Move(Piece o, Piece d, bool cast, bool capt, bool pass, bool prom);	
+		Move(Piece o, Piece d, bool cast, bool capt, bool pass, bool apass, bool prom);	
 		
 		void setNotation(const string& n);
 		string getNotation();
@@ -20,6 +21,7 @@ class Move {
 		Piece getOrigin();
 		Piece getDestination();
 		bool isCapture();
+		bool isPassant();
 		bool allowsPassant();
 		bool isPromotion();
 	private:

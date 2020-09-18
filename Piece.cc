@@ -33,6 +33,10 @@ void Piece::copyPiece(Piece& p) {
 	idn = p.idn;
 }
 
+void Piece::setType(PieceType t) {
+	type = t;
+}
+
 void Piece::printType() {
 	switch (type) {
 		case Pawn:

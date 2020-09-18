@@ -4,12 +4,13 @@ Move::Move() {
 	
 }
 
-Move::Move(Piece o, Piece d, bool cast, bool capt, bool pass, bool prom) {		
+Move::Move(Piece o, Piece d, bool cast, bool capt, bool pass, bool apass, bool prom) {		
 	origin = o;
 	destination = d;
 	castling = cast;
 	capture = capt;
 	passant = pass;
+	allowspassant = apass;
 	promotion = prom;
 	processNotation();
 }
@@ -26,8 +27,12 @@ bool Move::isCapture() {
 	return capture;
 }
 
-bool Move::allowsPassant() {
+bool Move::isPassant() {
 	return passant;
+}
+
+bool Move::allowsPassant() {
+	return allowspassant;
 }
 
 bool Move::isPromotion() {

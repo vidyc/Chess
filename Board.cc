@@ -39,7 +39,8 @@ bool Board::isKingInCheckmate() {
 	for (int i = -1; mate and i <= 1; i++) {
 		for (int j = -1; mate and j <= 1; j++) {
 			if (!(i == 0 and j == 0) and x + i >= 0 and x + i < rows and y + j >= 0 and y + j < rows) {
-				mate = isSquareAttacked(x + i, y + j);
+				mate = (!board[x + i][y + j].isEmpty() and board[x + i][y + j].isWhite() == white) 
+				or isSquareAttacked(x + i, y + j);
 			}
 		}
 	}
@@ -257,10 +258,14 @@ bool Board::isMoveLegal(const string& move) {
 
 int Board::findPiece(vector<Piece*> v, int rank, int file) {
 	int size = v.size();
+	bool found = false;
 	int i = 0;
-	while (!(v[i] -> getRank() == rank and v[i] -> getFileAsInt() == file) and i < size) {
+	while (!found and i < size) {
+		found = v[i] -> getRank() == rank and v[i] -> getFileAsInt() == file;
 		i++;
 	}
+
+	if (!found) i = -1;
 	return i;
 }
 
@@ -272,37 +277,33 @@ void Board::updateFEN(Move &m) {
 		for (int j = 0; j < size; j++) {
 			Piece p = board[i][j];
 			char c;
-			if (space != 0 and p.getType() != Empty) {
-				aux.push_back(space + '0');
-				space = 0;
-			}
-			switch (p.getType()) {
-				case Pawn:
+			if (p.getType() != Empty) {
+				if (space != 0) {
+					aux.push_back(space + '0');
+					space = 0;
+				}
+				if (p.getType() == Pawn) {
 					p.isWhite() ? c = 'P' : c = 'p';
-				break;
-				case Bishop:
+				} else if (p.getType() == Bishop) {	
 					p.isWhite() ? c = 'B' : c = 'b';
-				break;
-				case Knight:
+				} else if (p.getType() == Knight) {	
 					p.isWhite() ? c = 'N' : c = 'n';
-				break;
-				case Rook:
+				} else if (p.getType() == Rook) {	
 					p.isWhite() ? c = 'R' : c = 'r';
-				break;
-				case Queen:
+				} else if (p.getType() == Queen) {	
 					p.isWhite() ? c = 'Q' : c = 'q';
-				break;
-				case King:
+				} else if (p.getType() == King) {	
 					p.isWhite() ? c = 'K' : c = 'k';
-				break;
-				case Empty:
-					space++;
-				break;
-			}
-			if (p.getType() != Empty)
+				} 
 				aux.push_back(c);
+			} else {	
+				space++;	
+			}
 		}
-		space = 0;
+		if (space != 0) {
+			aux.push_back(space + '0');
+			space = 0;
+		}
 		if (i != size - 1) aux.push_back('/');
 	}
 
@@ -322,10 +323,10 @@ void Board::updateFEN(Move &m) {
 
 	if (m.allowsPassant()) {
 		Piece d = m.getDestination();
-		aux.push_back(d.getFileAsInt());
-		if (white) aux.push_back(d.getRank() + 1);
-		else aux.push_back(d.getRank() - 1);
-	} else aux.`push_back('-');
+		aux.push_back(d.getFile());
+		if (white) aux.push_back(9 - d.getRank() + '0');
+		else aux.push_back(7 - d.getRank() + '0');
+	} else aux.push_back('-');
 
 	aux.push_back(' ');
 
@@ -360,7 +361,13 @@ void Board::doMove(string& move) {
 		whitePieces[index1] = &board[x2][y2];
 
 		if (m.isCapture()) {
-			index2 = findPiece(blackPieces, x2, y2);
+			if (!m.isPassant()) {
+				index2 = findPiece(blackPieces, x2, y2);
+			} else {
+				board[x1][y2] = Piece(1, 0, '0', x1, y2);
+				index2 = findPiece(blackPieces, x1, y2);
+			}
+
 			blackPieces.erase(blackPieces.begin() + index2);
 			halfmoves = 0;
 		} else if (m.allowsPassant()) passant = board[x2 + 1][y2];
@@ -378,7 +385,13 @@ void Board::doMove(string& move) {
 		blackPieces[index1] = &board[x2][y2];
 
 		if (m.isCapture()) {
-			index2 = findPiece(whitePieces, x2, y2);
+			if (!m.isPassant()) {
+				index2 = findPiece(whitePieces, x2, y2);	
+			} else {
+				board[x1][y2] = Piece(1, 0, '0', x1, y2);
+				index2 = findPiece(whitePieces, x1, y2);
+			}
+
 			whitePieces.erase(whitePieces.begin() + index2);
 			halfmoves = 0;
 		} else if (m.allowsPassant()) passant = board[x2 - 1][y2];
@@ -393,13 +406,42 @@ void Board::doMove(string& move) {
 		turn++;
 	}
 
-	if (o.getType() == Pawn) halfmoves = 0;
+	if (o.getType() == Pawn) {
+		halfmoves = 0;
+		if (m.isPromotion()) {
+			cout << "Promote to Queen Rook Bishop Knight ?" << endl;
+			string s;
+			do {
+				cin >> s;
+			} while((s != "Queen" or "Q") and (s != "Rook" or "R")
+			 and (s != "Bishop" or "B") and (s != "Knight" or "K"));
 
+			if (s == "Queen" or s == "Q") {
+				board[x2][y2].setType(Queen);
+			} else if (s == "Rook" or s == "R") {
+				board[x2][y2].setType(Rook);
+			} else if (s == "Bishop" or s == "B") {
+				board[x2][y2].setType(Bishop);
+			} else if (s == "Knight" or s == "K") {
+				board[x2][y2].setType(Knight);
+			}
+		}
+	}
+	
 	white = !white;
 
 	check = isKingInCheck();
 
-	if (check) gameOver = isKingInCheckmate();
+	if (check) {
+		gameOver = isKingInCheckmate();
+		cout << "CHECK!!!" << endl;
+
+		if (gameOver) {
+			cout << "CHECKMATE!!!" << endl;
+			if (white) cout << "BLACK WINS!!!" << endl;
+			else cout << "WHITE WINS!!!" << endl;
+		}	
+	}
 
 	updateFEN(m);
 }
@@ -414,10 +456,10 @@ void Board::calculateLegalMovesBishop(int x, int y) {
 		if (upLeft and x - i >= 0 and y - i >= 0) {
 			Piece m = board[x - i][y - i];
 			if (m.isEmpty()) {
-				Move move(board[x][y], m, 0, 0, 0, 0); 
+				Move move(board[x][y], m, 0, 0, 0, 0, 0); 
 				legalMoves[move.getNotation()] = move;
 			} else if (m.isWhite() != white) {
-				Move move(board[x][y], m, 0, 1, 0, 0); 
+				Move move(board[x][y], m, 0, 1, 0, 0, 0); 
 				legalMoves[move.getNotation()] = move;
 				upLeft = 0;
 			} else upLeft = 0;
@@ -426,10 +468,10 @@ void Board::calculateLegalMovesBishop(int x, int y) {
 		if (upRight and x - i >= 0 and y + i < rows) {
 			Piece m = board[x - i][y + i];
 			if (m.isEmpty()) {
-				Move move(board[x][y], m, 0, 0, 0, 0); 
+				Move move(board[x][y], m, 0, 0, 0, 0, 0); 
 				legalMoves[move.getNotation()] = move;
 			} else if (m.isWhite() != white) {
-				Move move(board[x][y], m, 0, 1, 0, 0); 
+				Move move(board[x][y], m, 0, 1, 0, 0, 0); 
 				legalMoves[move.getNotation()] = move;
 				upRight = 0;
 			} else upRight = 0;
@@ -438,10 +480,10 @@ void Board::calculateLegalMovesBishop(int x, int y) {
 		if (downLeft and x + i < rows and y - i >= 0) {
 			Piece m = board[x + i][y - i];
 			if (m.isEmpty()) {
-				Move move(board[x][y], m, 0, 0, 0, 0); 
+				Move move(board[x][y], m, 0, 0, 0, 0, 0); 
 				legalMoves[move.getNotation()] = move;
 			} else if (m.isWhite() != white) {
-				Move move(board[x][y], m, 0, 1, 0, 0); 
+				Move move(board[x][y], m, 0, 1, 0, 0, 0); 
 				legalMoves[move.getNotation()] = move;
 				downLeft = 0;
 			} else downLeft = 0;
@@ -450,10 +492,10 @@ void Board::calculateLegalMovesBishop(int x, int y) {
 		if (downRight and x + i < rows and y + i < rows) {
 			Piece m = board[x + i][y + i];
 			if (m.isEmpty()) {
-				Move move(board[x][y], m, 0, 0, 0, 0); 
+				Move move(board[x][y], m, 0, 0, 0, 0, 0); 
 				legalMoves[move.getNotation()] = move;
 			} else if (m.isWhite() != white) {
-				Move move(board[x][y], m, 0, 1, 0, 0); 
+				Move move(board[x][y], m, 0, 1, 0, 0, 0); 
 				legalMoves[move.getNotation()] = move;
 				downRight = 0;
 			} else downRight = 0;
@@ -468,10 +510,10 @@ void Board::calculateLegalMovesRook(int x, int y) {
 		if (up and x - i >= 0) {
 			Piece m = board[x - i][y];
 			if (m.isEmpty()) {
-				Move move(board[x][y], m, 0, 0, 0, 0); 
+				Move move(board[x][y], m, 0, 0, 0, 0, 0); 
 				legalMoves[move.getNotation()] = move;
 			} else if (m.isWhite() != white) {
-				Move move(board[x][y], m, 0, 1, 0, 0); 
+				Move move(board[x][y], m, 0, 1, 0, 0, 0); 
 				legalMoves[move.getNotation()] = move;
 				up = 0;
 			} else up = 0;
@@ -480,10 +522,10 @@ void Board::calculateLegalMovesRook(int x, int y) {
 		if (down and x + i < rows) {
 			Piece m = board[x + i][y];
 			if (m.isEmpty()) {
-				Move move(board[x][y], m, 0, 0, 0, 0); 
+				Move move(board[x][y], m, 0, 0, 0, 0, 0); 
 				legalMoves[move.getNotation()] = move;
 			} else if (m.isWhite() != white) {
-				Move move(board[x][y], m, 0, 1, 0, 0); 
+				Move move(board[x][y], m, 0, 1, 0, 0, 0); 
 				legalMoves[move.getNotation()] = move;
 				down = 0;
 			} else down = 0;
@@ -492,10 +534,10 @@ void Board::calculateLegalMovesRook(int x, int y) {
 		if (left and y - i >= 0) {
 			Piece m = board[x][y - i];
 			if (m.isEmpty()) {
-				Move move(board[x][y], m, 0, 0, 0, 0); 
+				Move move(board[x][y], m, 0, 0, 0, 0, 0); 
 				legalMoves[move.getNotation()] = move;
 			} else if (m.isWhite() != white) {
-				Move move(board[x][y], m, 0, 1, 0, 0); 
+				Move move(board[x][y], m, 0, 1, 0, 0, 0); 
 				legalMoves[move.getNotation()] = move;
 				left = 0;
 			} else left = 0;
@@ -504,10 +546,10 @@ void Board::calculateLegalMovesRook(int x, int y) {
 		if (right and y + i < rows) {
 			Piece m = board[x][y + i];
 			if (m.isEmpty()) {
-				Move move(board[x][y], m, 0, 0, 0, 0); 
+				Move move(board[x][y], m, 0, 0, 0, 0, 0); 
 				legalMoves[move.getNotation()] = move;
 			} else if (m.isWhite() != white) {
-				Move move(board[x][y], m, 0, 1, 0, 0); 
+				Move move(board[x][y], m, 0, 1, 0, 0, 0); 
 				legalMoves[move.getNotation()] = move;
 				right = 0;
 			} else right = 0;
@@ -529,29 +571,31 @@ void Board::calculateLegalMoves() {
 				if (board[x - 1][y].isEmpty()) {
 					
 					if (x - 1 == 0) {
-						Move move(board[x][y], board[x - 1][y], 0, 0, 0, 1); 
+						Move move(board[x][y], board[x - 1][y], 0, 0, 0, 0, 1); 
 						legalMoves[move.getNotation()] = move;
 					} else {
-						Move move(board[x][y], board[x - 1][y], 0, 0, 0, 0); 
+						Move move(board[x][y], board[x - 1][y], 0, 0, 0, 0, 0); 
 						legalMoves[move.getNotation()] = move;
 					}					
 					
 					if (x == 6 and board[x - 2][y].isEmpty()) {
-						Move move2(board[x][y], board[x - 2][y], 0, 0, 1, 0); 
+						Move move2(board[x][y], board[x - 2][y], 0, 0, 0, 1, 0); 
 						legalMoves[move2.getNotation()] = move2;
 					} 
 				} 
 				
 				for (int i = -1; i <= 1; i += 2) {
-					if (y + i >= 0 and y + i < rows and 
-						((!board[x - 1][y + i].isEmpty() and !board[x - 1][y + i].isWhite()) 
-							or (!passant.isWhite() and passant.getRank() == x - 1 and passant.getFileAsInt() == y + i))) {
-
-						if (x - 1 == 0) {
-							Move move(board[x][y], board[x - 1][y + i], 0, 1, 0, 1); 
-							legalMoves[move.getNotation()] = move;
-						} else {
-							Move move(board[x][y], board[x - 1][y + i], 0, 1, 0, 0); 
+					if (y + i >= 0 and y + i < rows) { 
+						if (!board[x - 1][y + i].isEmpty() and !board[x - 1][y + i].isWhite()) {
+							if (x - 1 == 0) {
+								Move move(board[x][y], board[x - 1][y + i], 0, 1, 0, 0, 1); 
+								legalMoves[move.getNotation()] = move;
+							} else {
+								Move move(board[x][y], board[x - 1][y + i], 0, 1, 0, 0, 0); 
+								legalMoves[move.getNotation()] = move;
+							}
+						} else if (!passant.isWhite() and passant.getRank() == x - 1 and passant.getFileAsInt() == y + i) {
+							Move move(board[x][y], board[x - 1][y + i], 0, 1, 1, 0, 0); 
 							legalMoves[move.getNotation()] = move;
 						}
 					}
@@ -562,10 +606,10 @@ void Board::calculateLegalMoves() {
 						if (not (i == 0 and j == 0) and x + i >= 0 and x + i < rows and y + j >= 0 and y + j < rows) {
 							Piece m = board[x + i][y + j];
 							if (m.isEmpty()) {
-								Move move(board[x][y], m, 0, 0, 0, 0); 
+								Move move(board[x][y], m, 0, 0, 0, 0, 0); 
 								legalMoves[move.getNotation()] = move;
 							} else if (m.isWhite() != white) {
-								Move move(board[x][y], m, 0, 1, 0, 0); 
+								Move move(board[x][y], m, 0, 1, 0, 0, 0); 
 								legalMoves[move.getNotation()] = move;
 							}
 						}
@@ -576,13 +620,13 @@ void Board::calculateLegalMoves() {
 
 				if (castlingRights[0] and board[x][y + 1].isEmpty() and board[x][y + 2].isEmpty() and
 				!isSquareAttacked(x, y + 1) and !isSquareAttacked(x, y + 2)) {
-					Move move(board[x][y], board[x][y + 2], 1, 0, 0, 0); 
+					Move move(board[x][y], board[x][y + 2], 1, 0, 0, 0, 0); 
 					legalMoves[move.getNotation()] = move;
 				} 
 
 				if (castlingRights[1] and board[x][y - 1].isEmpty() and board[x][y - 2].isEmpty() 
 					and board[x][y - 3].isEmpty() and !isSquareAttacked(x, y - 1) and !isSquareAttacked(x, y - 2)) {
-						Move move(board[x][y], board[x][y - 2], 1, 0, 0, 0);
+						Move move(board[x][y], board[x][y - 2], 1, 0, 0, 0, 0);
 						legalMoves[move.getNotation()] = move;
 				} 
 			} else if (p.getType() == Knight) {
@@ -591,10 +635,10 @@ void Board::calculateLegalMoves() {
 						if (x + i >= 0 and x + i < rows and y + j >= 0 and y + j < rows) {
 							Piece m = board[x + i][y + j];
 							if (m.isEmpty()) {
-								Move move(board[x][y], m, 0, 0, 0, 0); 
+								Move move(board[x][y], m, 0, 0, 0, 0, 0); 
 								legalMoves[move.getNotation()] = move;
 							} else if (!m.isWhite()) {
-								Move move(board[x][y], m, 0, 1, 0, 0); 
+								Move move(board[x][y], m, 0, 1, 0, 0, 0); 
 								legalMoves[move.getNotation()] = move;
 							}
 						}
@@ -602,10 +646,10 @@ void Board::calculateLegalMoves() {
 						if (x + j >= 0 and x + j < rows and y + i >= 0 and y + i < rows) {
 							Piece m = board[x + j][y + i];
 							if (m.isEmpty()) {
-								Move move(board[x][y], m, 0, 0, 0, 0); 
+								Move move(board[x][y], m, 0, 0, 0, 0, 0); 
 								legalMoves[move.getNotation()] = move;
 							} else if (!m.isWhite()) {
-								Move move(board[x][y], m, 0, 1, 0, 0); 
+								Move move(board[x][y], m, 0, 1, 0, 0, 0); 
 								legalMoves[move.getNotation()] = move;
 							}
 						}
@@ -629,29 +673,32 @@ void Board::calculateLegalMoves() {
 			if (p.getType() == Pawn) {
 
 				if (board[x + 1][y].isEmpty()) {
-					if (x - 1 == 0) {
-						Move move(board[x][y], board[x + 1][y], 0, 0, 0, 1); 
+					if (x + 1 == rows - 1) {
+						Move move(board[x][y], board[x + 1][y], 0, 0, 0, 0, 1); 
 						legalMoves[move.getNotation()] = move;
 					} else {
-						Move move(board[x][y], board[x + 1][y], 0, 0, 0, 0); 
+						Move move(board[x][y], board[x + 1][y], 0, 0, 0, 0, 0); 
 						legalMoves[move.getNotation()] = move;
 					}
 					
 					if (x == 1 and board[x + 2][y].isEmpty()) {
-						Move move(board[x][y], board[x + 2][y], 0, 0, 1, 0);
+						Move move(board[x][y], board[x + 2][y], 0, 0, 0, 1, 0);
 						legalMoves[move.getNotation()] = move;
 					} 
 				} 
 				
 				for (int i = -1; i <= 1; i += 2) {
-					if (y + i >= 0 and y + i < rows and 
-						((!board[x + 1][y + i].isEmpty() and !board[x + 1][y + i].isWhite()) 
-							or (!passant.isWhite() and passant.getRank() == x + 1 and passant.getFileAsInt() == y + i))) {
-						if (x - 1 == 0) {
-							Move move(board[x][y], board[x + 1][y + i], 0, 1, 0, 1); 
-							legalMoves[move.getNotation()] = move;
-						} else {
-							Move move(board[x][y], board[x + 1][y + i], 0, 1, 0, 0); 
+					if (y + i >= 0 and y + i < rows) {
+						if (!board[x + 1][y + i].isEmpty() and board[x + 1][y + i].isWhite()) {
+							if (x + 1 == rows - 1) {
+								Move move(board[x][y], board[x + 1][y + i], 0, 1, 0, 0, 1); 
+								legalMoves[move.getNotation()] = move;
+							} else {
+								Move move(board[x][y], board[x + 1][y + i], 0, 1, 0, 0, 0); 
+								legalMoves[move.getNotation()] = move;
+							}
+						} else if (passant.isWhite() and passant.getRank() == x + 1 and passant.getFileAsInt() == y + i) {
+							Move move(board[x][y], board[x + 1][y + i], 0, 1, 1, 0, 0); 
 							legalMoves[move.getNotation()] = move;
 						}
 					}
@@ -662,10 +709,10 @@ void Board::calculateLegalMoves() {
 						if (not (i == 0 and j == 0) and x + i >= 0 and x + i < rows and y + j >= 0 and y + j < rows) {
 							Piece m = board[x + i][y + j];
 							if (m.isEmpty()) {
-								Move move(board[x][y], m, 0, 0, 0, 0); 
+								Move move(board[x][y], m, 0, 0, 0, 0, 0); 
 								legalMoves[move.getNotation()] = move;
 							} else if (m.isWhite() != white) {
-								Move move(board[x][y], m, 0, 1, 0, 0); 
+								Move move(board[x][y], m, 0, 1, 0, 0, 0); 
 								legalMoves[move.getNotation()] = move;
 							}
 						}
@@ -676,13 +723,13 @@ void Board::calculateLegalMoves() {
 
 				if (castlingRights[2] and board[x][y + 1].isEmpty() and board[x][y + 2].isEmpty() and
 				!isSquareAttacked(x, y + 1) and !isSquareAttacked(x, y + 2)) {
-					Move move(board[x][y], board[x][y + 2], 1, 0, 0, 0); 
+					Move move(board[x][y], board[x][y + 2], 1, 0, 0, 0, 0); 
 					legalMoves[move.getNotation()] = move;
 				} 
 
 				if (castlingRights[3] and board[x][y - 1].isEmpty() and board[x][y - 2].isEmpty() 
 					and board[x][y - 3].isEmpty() and !isSquareAttacked(x, y - 1) and !isSquareAttacked(x, y - 2)) {
-							Move move(board[x][y], board[x][y - 2], 1, 0, 0, 0);
+							Move move(board[x][y], board[x][y - 2], 1, 0, 0, 0, 0);
 							legalMoves[move.getNotation()] = move;
 				} 
 			} else if (p.getType() == Knight) {
@@ -691,10 +738,10 @@ void Board::calculateLegalMoves() {
 						if (x + i >= 0 and x + i < rows and y + j >= 0 and y + j < rows) {
 							Piece m = board[x + i][y + j];
 							if (m.isEmpty()) {
-								Move move(board[x][y], m, 0, 0, 0, 0); 
+								Move move(board[x][y], m, 0, 0, 0, 0, 0); 
 								legalMoves[move.getNotation()] = move;
-							} else if (!m.isWhite()) {
-								Move move(board[x][y], m, 0, 1, 0, 0); 
+							} else if (m.isWhite()) {
+								Move move(board[x][y], m, 0, 1, 0, 0, 0); 
 								legalMoves[move.getNotation()] = move;
 							}
 						}
@@ -702,10 +749,10 @@ void Board::calculateLegalMoves() {
 						if (x + j >= 0 and x + j < rows and y + i >= 0 and y + i < rows) {
 							Piece m = board[x + j][y + i];
 							if (m.isEmpty()) {
-								Move move(board[x][y], m, 0, 0, 0, 0); 
+								Move move(board[x][y], m, 0, 0, 0, 0, 0); 
 								legalMoves[move.getNotation()] = move;
-							} else if (!m.isWhite()) {
-								Move move(board[x][y], m, 0, 1, 0, 0); 
+							} else if (m.isWhite()) {
+								Move move(board[x][y], m, 0, 1, 0, 0, 0); 
 								legalMoves[move.getNotation()] = move;
 							}
 						}
