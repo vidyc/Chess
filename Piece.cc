@@ -35,6 +35,30 @@ void Piece::copyPiece(Piece& p) {
 
 void Piece::setType(PieceType t) {
 	type = t;
+
+	switch (type) {
+		case Pawn:
+			white ? idn = 'P' : idn = 'p';
+		break;
+		case Knight:
+			white ? idn = 'N' : idn = 'n';
+		break;
+		case Bishop:
+			white ? idn = 'B' : idn = 'b';
+		break;
+		case Rook:
+			white ? idn = 'R' : idn = 'r';
+		break;
+		case Queen:
+			white ? idn = 'Q' : idn = 'q';
+		break;
+		case King:
+			white ? idn = 'K' : idn = 'k';
+		break;
+		case Empty:
+			idn = '0';
+		break;
+	}
 }
 
 void Piece::printType() {

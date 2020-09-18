@@ -32,6 +32,8 @@ class Board {
 		bool isGameOver();
 
 	private:
+		void insertNewLegalMove(Move &move);
+
 		void calculateLegalMoves();
 		void calculateLegalMovesBishop(int x, int y);
 		void calculateLegalMovesRook(int x, int y);
