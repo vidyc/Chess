@@ -88,6 +88,19 @@ void Piece::printType() {
 			cout << "INTEO";
 		break;
 	}
+	cout << endl;
+}
+
+void Piece::printPos() {
+	cout << getRank() << ", " << getFileAsInt() << endl;
+}
+
+void Piece::printStatus() {
+	printPos();
+	cout << "empty: " << empty << endl;
+	cout << "white: " << white << endl;
+	printType();
+	cout << "idn: " << idn << endl;
 }
 
 PieceType Piece::getType() {

@@ -316,10 +316,22 @@ void Board::updateFEN(Move &m) {
 
 	aux.push_back(' ');
 
-	if (castlingRights[0]) aux.push_back('K');
-	else if (castlingRights[1]) aux.push_back('Q');
-	else if (castlingRights[2]) aux.push_back('k');
-	else if (castlingRights[3]) aux.push_back('q');
+	bool rights = false;
+
+	if (castlingRights[0]) {
+		aux.push_back('K');
+	} 
+	if (castlingRights[1]) {
+		aux.push_back('Q');
+	} 
+	if (castlingRights[2]) {
+		aux.push_back('k');
+	}
+	if (castlingRights[3]) {
+		aux.push_back('q');
+	}
+	
+	if (!rights) aux.push_back('-');
 
 	aux.push_back(' ');
 
@@ -332,11 +344,11 @@ void Board::updateFEN(Move &m) {
 
 	aux.push_back(' ');
 
-	aux.push_back(halfmoves + '0');
+	aux += std::to_string(halfmoves);
 
 	aux.push_back(' ');
 
-	aux.push_back(turn + '0');
+	aux += std::to_string(turn);
 
 	FEN = aux;
 }
@@ -351,6 +363,8 @@ void Board::doMove(string& move) {
 	Piece o = m.getOrigin(), d = m.getDestination();
 	int x1 = o.getRank(), y1 = o.getFileAsInt();
 	int x2 = d.getRank(), y2 = d.getFileAsInt();
+
+	bool castling = m.isCastling();
 
 	board[x2][y2].copyPiece(board[x1][y1]);
 	board[x1][y1] = Piece(1, 0, '.', x1, y1);
@@ -380,6 +394,21 @@ void Board::doMove(string& move) {
 		if (o.getType() == King) {
 			castlingRights[0] = 0;
 			castlingRights[1] = 0;
+			if (castling) {
+				if (y2 == 6) {
+					board[x2][y2 - 1].copyPiece(board[x2][y2 + 1]);
+					board[x2][y2 + 1] = Piece(1, 0, '.', x2, y2 + 1);
+
+					index2 = findPiece(whitePieces, x2, y2 + 1);
+					whitePieces[index2] = &board[x2][y2 - 1];
+				} else {
+					board[x2][y2 + 1].copyPiece(board[x2][y2 - 2]);
+					board[x2][y2 - 2] = Piece(1, 0, '.', x2, y2 - 2);
+
+					index2 = findPiece(whitePieces, x2, y2 - 2);
+					whitePieces[index2] = &board[x2][y2 + 1];
+				}
+			}
 		} else if (o.getType() == Rook) {
 			if (o.getFileAsInt() == 0) castlingRights[1] = 0;
 			else if (o.getFileAsInt() == 7) castlingRights[0] = 0;
@@ -404,6 +433,21 @@ void Board::doMove(string& move) {
 		if (o.getType() == King) {
 			castlingRights[2] = 0;
 			castlingRights[3] = 0;
+			if (castling) {
+				if (y2 == 6) {
+					board[x2][y2 - 1].copyPiece(board[x2][y2 + 1]);
+					board[x2][y2 + 1] = Piece(1, 0, '.', x2, y2 + 1);
+
+					index2 = findPiece(blackPieces, x2, y2 + 1);
+					blackPieces[index2] = &board[x2][y2 - 1];
+				} else {
+					board[x2][y2 + 1].copyPiece(board[x2][y2 - 2]);
+					board[x2][y2 - 2] = Piece(1, 0, '.', x2, y2 - 2);
+
+					index2 = findPiece(blackPieces, x2, y2 - 2);
+					blackPieces[index2] = &board[x2][y2 + 1];
+				}
+			}
 		} else if (o.getType() == Rook) {
 			if (o.getFileAsInt() == 0) castlingRights[3] = 0;
 			else if (o.getFileAsInt() == 7) castlingRights[2] = 0;
@@ -461,7 +505,7 @@ void Board::insertNewLegalMove(Move &move) {
 
 	if (it != legalMoves.end()) {
 		Piece o1 = it -> second.getOrigin(), o2 = move.getOrigin();
-
+		
 		if (o1.getFileAsInt() != o2.getFileAsInt()) {
 			key.insert(1, 1, o2.getFile());
 			move.setNotation(key);
@@ -495,10 +539,10 @@ void Board::calculateLegalMovesBishop(int x, int y) {
 			Piece m = board[x - i][y - i];
 			if (m.isEmpty()) {
 				Move move(board[x][y], m, 0, 0, 0, 0, 0); 
-				insertNewLegalMove(move);;
+				insertNewLegalMove(move);
 			} else if (m.isWhite() != white) {
 				Move move(board[x][y], m, 0, 1, 0, 0, 0); 
-				insertNewLegalMove(move);;
+				insertNewLegalMove(move);
 				upLeft = 0;
 			} else upLeft = 0;
 		}
@@ -507,10 +551,10 @@ void Board::calculateLegalMovesBishop(int x, int y) {
 			Piece m = board[x - i][y + i];
 			if (m.isEmpty()) {
 				Move move(board[x][y], m, 0, 0, 0, 0, 0); 
-				insertNewLegalMove(move);;
+				insertNewLegalMove(move);
 			} else if (m.isWhite() != white) {
 				Move move(board[x][y], m, 0, 1, 0, 0, 0); 
-				insertNewLegalMove(move);;
+				insertNewLegalMove(move);
 				upRight = 0;
 			} else upRight = 0;
 		}
@@ -519,10 +563,10 @@ void Board::calculateLegalMovesBishop(int x, int y) {
 			Piece m = board[x + i][y - i];
 			if (m.isEmpty()) {
 				Move move(board[x][y], m, 0, 0, 0, 0, 0); 
-				insertNewLegalMove(move);;
+				insertNewLegalMove(move);
 			} else if (m.isWhite() != white) {
 				Move move(board[x][y], m, 0, 1, 0, 0, 0); 
-				insertNewLegalMove(move);;
+				insertNewLegalMove(move);
 				downLeft = 0;
 			} else downLeft = 0;
 		}
@@ -531,10 +575,10 @@ void Board::calculateLegalMovesBishop(int x, int y) {
 			Piece m = board[x + i][y + i];
 			if (m.isEmpty()) {
 				Move move(board[x][y], m, 0, 0, 0, 0, 0); 
-				insertNewLegalMove(move);;
+				insertNewLegalMove(move);
 			} else if (m.isWhite() != white) {
 				Move move(board[x][y], m, 0, 1, 0, 0, 0); 
-				insertNewLegalMove(move);;
+				insertNewLegalMove(move);
 				downRight = 0;
 			} else downRight = 0;
 		}
@@ -549,10 +593,10 @@ void Board::calculateLegalMovesRook(int x, int y) {
 			Piece m = board[x - i][y];
 			if (m.isEmpty()) {
 				Move move(board[x][y], m, 0, 0, 0, 0, 0); 
-				insertNewLegalMove(move);;
+				insertNewLegalMove(move);
 			} else if (m.isWhite() != white) {
 				Move move(board[x][y], m, 0, 1, 0, 0, 0); 
-				insertNewLegalMove(move);;
+				insertNewLegalMove(move);
 				up = 0;
 			} else up = 0;
 		}
@@ -561,10 +605,10 @@ void Board::calculateLegalMovesRook(int x, int y) {
 			Piece m = board[x + i][y];
 			if (m.isEmpty()) {
 				Move move(board[x][y], m, 0, 0, 0, 0, 0); 
-				insertNewLegalMove(move);;
+				insertNewLegalMove(move);
 			} else if (m.isWhite() != white) {
 				Move move(board[x][y], m, 0, 1, 0, 0, 0); 
-				insertNewLegalMove(move);;
+				insertNewLegalMove(move);
 				down = 0;
 			} else down = 0;
 		}
@@ -573,10 +617,10 @@ void Board::calculateLegalMovesRook(int x, int y) {
 			Piece m = board[x][y - i];
 			if (m.isEmpty()) {
 				Move move(board[x][y], m, 0, 0, 0, 0, 0); 
-				insertNewLegalMove(move);;
+				insertNewLegalMove(move);
 			} else if (m.isWhite() != white) {
 				Move move(board[x][y], m, 0, 1, 0, 0, 0); 
-				insertNewLegalMove(move);;
+				insertNewLegalMove(move);
 				left = 0;
 			} else left = 0;
 		}
@@ -585,10 +629,10 @@ void Board::calculateLegalMovesRook(int x, int y) {
 			Piece m = board[x][y + i];
 			if (m.isEmpty()) {
 				Move move(board[x][y], m, 0, 0, 0, 0, 0); 
-				insertNewLegalMove(move);;
+				insertNewLegalMove(move);
 			} else if (m.isWhite() != white) {
 				Move move(board[x][y], m, 0, 1, 0, 0, 0); 
-				insertNewLegalMove(move);;
+				insertNewLegalMove(move);
 				right = 0;
 			} else right = 0;
 		}
@@ -604,16 +648,19 @@ void Board::calculateLegalMoves() {
 			Piece p = *whitePieces[i];
 			int x = p.getRank();
 			int y = p.getFileAsInt();
+
+			if (x == 7 && y == 5) p.printStatus();
+
 			if (p.getType() == Pawn) {
 
 				if (board[x - 1][y].isEmpty()) {
 					
 					if (x - 1 == 0) {
 						Move move(board[x][y], board[x - 1][y], 0, 0, 0, 0, 1); 
-						insertNewLegalMove(move);;
+						insertNewLegalMove(move);
 					} else {
 						Move move(board[x][y], board[x - 1][y], 0, 0, 0, 0, 0); 
-						insertNewLegalMove(move);;
+						insertNewLegalMove(move);
 					}					
 					
 					if (x == 6 and board[x - 2][y].isEmpty()) {
@@ -627,14 +674,14 @@ void Board::calculateLegalMoves() {
 						if (!board[x - 1][y + i].isEmpty() and !board[x - 1][y + i].isWhite()) {
 							if (x - 1 == 0) {
 								Move move(board[x][y], board[x - 1][y + i], 0, 1, 0, 0, 1); 
-								insertNewLegalMove(move);;
+								insertNewLegalMove(move);
 							} else {
 								Move move(board[x][y], board[x - 1][y + i], 0, 1, 0, 0, 0); 
-								insertNewLegalMove(move);;
+								insertNewLegalMove(move);
 							}
 						} else if (!passant.isWhite() and passant.getRank() == x - 1 and passant.getFileAsInt() == y + i) {
 							Move move(board[x][y], board[x - 1][y + i], 0, 1, 1, 0, 0); 
-							insertNewLegalMove(move);;
+							insertNewLegalMove(move);
 						}
 					}
 				}
@@ -645,10 +692,10 @@ void Board::calculateLegalMoves() {
 							Piece m = board[x + i][y + j];
 							if (m.isEmpty()) {
 								Move move(board[x][y], m, 0, 0, 0, 0, 0); 
-								insertNewLegalMove(move);;
+								insertNewLegalMove(move);
 							} else if (m.isWhite() != white) {
 								Move move(board[x][y], m, 0, 1, 0, 0, 0); 
-								insertNewLegalMove(move);;
+								insertNewLegalMove(move);
 							}
 						}
 					}
@@ -659,13 +706,13 @@ void Board::calculateLegalMoves() {
 				if (castlingRights[0] and board[x][y + 1].isEmpty() and board[x][y + 2].isEmpty() and
 				!isSquareAttacked(x, y + 1) and !isSquareAttacked(x, y + 2)) {
 					Move move(board[x][y], board[x][y + 2], 1, 0, 0, 0, 0); 
-					insertNewLegalMove(move);;
+					insertNewLegalMove(move);
 				} 
 
 				if (castlingRights[1] and board[x][y - 1].isEmpty() and board[x][y - 2].isEmpty() 
 					and board[x][y - 3].isEmpty() and !isSquareAttacked(x, y - 1) and !isSquareAttacked(x, y - 2)) {
 						Move move(board[x][y], board[x][y - 2], 1, 0, 0, 0, 0);
-						insertNewLegalMove(move);;
+						insertNewLegalMove(move);
 				} 
 			} else if (p.getType() == Knight) {
 				for (int i = -2; i <= 2; i += 4) {
@@ -674,10 +721,10 @@ void Board::calculateLegalMoves() {
 							Piece m = board[x + i][y + j];
 							if (m.isEmpty()) {
 								Move move(board[x][y], m, 0, 0, 0, 0, 0); 
-								insertNewLegalMove(move);;
+								insertNewLegalMove(move);
 							} else if (!m.isWhite()) {
 								Move move(board[x][y], m, 0, 1, 0, 0, 0); 
-								insertNewLegalMove(move);;
+								insertNewLegalMove(move);
 							}
 						}
 
@@ -685,10 +732,10 @@ void Board::calculateLegalMoves() {
 							Piece m = board[x + j][y + i];
 							if (m.isEmpty()) {
 								Move move(board[x][y], m, 0, 0, 0, 0, 0); 
-								insertNewLegalMove(move);;
+								insertNewLegalMove(move);
 							} else if (!m.isWhite()) {
 								Move move(board[x][y], m, 0, 1, 0, 0, 0); 
-								insertNewLegalMove(move);;
+								insertNewLegalMove(move);
 							}
 						}
 					}
@@ -713,15 +760,15 @@ void Board::calculateLegalMoves() {
 				if (board[x + 1][y].isEmpty()) {
 					if (x + 1 == rows - 1) {
 						Move move(board[x][y], board[x + 1][y], 0, 0, 0, 0, 1); 
-						insertNewLegalMove(move);;
+						insertNewLegalMove(move);
 					} else {
 						Move move(board[x][y], board[x + 1][y], 0, 0, 0, 0, 0); 
-						insertNewLegalMove(move);;
+						insertNewLegalMove(move);
 					}
 					
 					if (x == 1 and board[x + 2][y].isEmpty()) {
 						Move move(board[x][y], board[x + 2][y], 0, 0, 0, 1, 0);
-						insertNewLegalMove(move);;
+						insertNewLegalMove(move);
 					} 
 				} 
 				
@@ -730,14 +777,14 @@ void Board::calculateLegalMoves() {
 						if (!board[x + 1][y + i].isEmpty() and board[x + 1][y + i].isWhite()) {
 							if (x + 1 == rows - 1) {
 								Move move(board[x][y], board[x + 1][y + i], 0, 1, 0, 0, 1); 
-								insertNewLegalMove(move);;
+								insertNewLegalMove(move);
 							} else {
 								Move move(board[x][y], board[x + 1][y + i], 0, 1, 0, 0, 0); 
-								insertNewLegalMove(move);;
+								insertNewLegalMove(move);
 							}
 						} else if (passant.isWhite() and passant.getRank() == x + 1 and passant.getFileAsInt() == y + i) {
 							Move move(board[x][y], board[x + 1][y + i], 0, 1, 1, 0, 0); 
-							insertNewLegalMove(move);;
+							insertNewLegalMove(move);
 						}
 					}
 				}
@@ -748,10 +795,10 @@ void Board::calculateLegalMoves() {
 							Piece m = board[x + i][y + j];
 							if (m.isEmpty()) {
 								Move move(board[x][y], m, 0, 0, 0, 0, 0); 
-								insertNewLegalMove(move);;
+								insertNewLegalMove(move);
 							} else if (m.isWhite() != white) {
 								Move move(board[x][y], m, 0, 1, 0, 0, 0); 
-								insertNewLegalMove(move);;
+								insertNewLegalMove(move);
 							}
 						}
 					}
@@ -762,13 +809,13 @@ void Board::calculateLegalMoves() {
 				if (castlingRights[2] and board[x][y + 1].isEmpty() and board[x][y + 2].isEmpty() and
 				!isSquareAttacked(x, y + 1) and !isSquareAttacked(x, y + 2)) {
 					Move move(board[x][y], board[x][y + 2], 1, 0, 0, 0, 0); 
-					insertNewLegalMove(move);;
+					insertNewLegalMove(move);
 				} 
 
 				if (castlingRights[3] and board[x][y - 1].isEmpty() and board[x][y - 2].isEmpty() 
 					and board[x][y - 3].isEmpty() and !isSquareAttacked(x, y - 1) and !isSquareAttacked(x, y - 2)) {
 							Move move(board[x][y], board[x][y - 2], 1, 0, 0, 0, 0);
-							insertNewLegalMove(move);;
+							insertNewLegalMove(move);
 				} 
 			} else if (p.getType() == Knight) {
 				for (int i = -2; i <= 2; i += 4) {
@@ -777,10 +824,10 @@ void Board::calculateLegalMoves() {
 							Piece m = board[x + i][y + j];
 							if (m.isEmpty()) {
 								Move move(board[x][y], m, 0, 0, 0, 0, 0); 
-								insertNewLegalMove(move);;
+								insertNewLegalMove(move);
 							} else if (m.isWhite()) {
 								Move move(board[x][y], m, 0, 1, 0, 0, 0); 
-								insertNewLegalMove(move);;
+								insertNewLegalMove(move);
 							}
 						}
 
@@ -788,10 +835,10 @@ void Board::calculateLegalMoves() {
 							Piece m = board[x + j][y + i];
 							if (m.isEmpty()) {
 								Move move(board[x][y], m, 0, 0, 0, 0, 0); 
-								insertNewLegalMove(move);;
+								insertNewLegalMove(move);
 							} else if (m.isWhite()) {
 								Move move(board[x][y], m, 0, 1, 0, 0, 0); 
-								insertNewLegalMove(move);;
+								insertNewLegalMove(move);
 							}
 						}
 					}

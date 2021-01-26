@@ -24,6 +24,7 @@ class Move {
 		bool isPassant();
 		bool allowsPassant();
 		bool isPromotion();
+		bool isCastling();
 	private:
 		void processNotation();
 };

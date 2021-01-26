@@ -31,6 +31,10 @@ bool Move::isPassant() {
 	return passant;
 }
 
+bool Move::isCastling() {
+	return castling;
+}
+
 bool Move::allowsPassant() {
 	return allowspassant;
 }
